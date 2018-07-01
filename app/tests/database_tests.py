@@ -1,9 +1,9 @@
 import unittest
-import database_config
+import configs
 
 
 class DataBaseTest(unittest.TestCase):
 
     def test_connection_pass(self):
 
-        self.assertEqual(database_config.start_connection(), True)
+        self.assertEqual(configs.start_connection(), True)
