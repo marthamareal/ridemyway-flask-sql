@@ -3,6 +3,7 @@ import jwt
 
 from app.db_manager import DatabaseManager
 from configs import secret
+from app.validators import ValidateUserEntries
 
 
 class User:
@@ -13,7 +14,7 @@ class User:
         self.l_name = l_name
         self.email = email
         self.city = city
-        self.password = hash_password(password)
+        self.password = password
         self.phone_no = phone_no
 
     def create_user(self):
@@ -22,30 +23,36 @@ class User:
               " VALUES (%s, %s, %s, %s, %s, %s) RETURNING id"
 
         with DatabaseManager() as cursor:
-            """
-                check if email already exists
-            """
-            cursor.execute("SELECT email FROM users WHERE email = ('%s')" % self.email)
-            results = cursor.fetchone()
 
-            if results:
-                return "Email already registered"
-
-            else:
-                """
-                    Create user account in the db
-                """
-                cursor.execute(sql, (self.f_name, self.l_name, self.email,
-                                     self.city, self.phone_no, hash_password(self.password)))
+            validate_flag = ValidateUserEntries.signup(self.f_name, self.l_name,
+                                                       self.email, self.city, self.phone_no, self.password)
+            if validate_flag == "pass":
 
                 """
-                Search for that created user from the db and return values
+                    check if email already exists
                 """
-                cursor.execute("SELECT * FROM users WHERE email = '%s'" % self.email)
-                result_user = cursor.fetchone()
+                cursor.execute("SELECT email FROM users WHERE email = ('%s')" % self.email)
+                results = cursor.fetchone()
 
-                return self.user_json(result_user[0], result_user[1], result_user[2],
-                                      result_user[3], result_user[4], result_user[5], result_user[6], )
+                if results:
+                    return "Email already registered"
+
+                else:
+                    """
+                        Create user account in the db
+                    """
+                    cursor.execute(sql, (self.f_name, self.l_name, self.email,
+                                         self.city, self.phone_no, hash_password(self.password)))
+
+                    """
+                    Search for that created user from the db and return values
+                    """
+                    cursor.execute("SELECT * FROM users WHERE email = '%s'" % self.email)
+                    result_user = cursor.fetchone()
+
+                    return self.user_json(result_user[0], result_user[1], result_user[2],
+                                          result_user[3], result_user[4], result_user[5], result_user[6], )
+            return validate_flag
 
     @staticmethod
     def login_user(email, password):
