@@ -19,6 +19,7 @@ def create_sample_user(f_name, l_name, email, city, phone_no, password):
 class UserTests(unittest.TestCase):
     json_headers = {'Content-Type': 'application/json'}
     sample_user = create_sample_user("test", "martha", "marthamareal@gmail.com", "kampala", "075566633", "pass")
+    sample_login = {"email": 'marthamareal@gmail.com', "password": 'pass'}
 
     def setUp(self):
         self.test_client = app.test_client()
@@ -26,5 +27,11 @@ class UserTests(unittest.TestCase):
     def test_create_user(self):
         data = json.dumps(self.sample_user)
         response = self.test_client.post('/auth/signup', data=data, headers=self.json_headers)
+
+        self.assertEqual(response.status_code, 201)
+
+    def test_user_login(self):
+        data = json.dumps(self.sample_login)
+        response = self.test_client.post('/auth/login', data=data, headers=self.json_headers)
 
         self.assertEqual(response.status_code, 201)
