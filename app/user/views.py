@@ -1,7 +1,6 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 from flask_restful import reqparse
 from .model import User
-from app.decorators import login_required
 
 blue_print_user = Blueprint('blue_print_user', __name__)
 
