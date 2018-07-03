@@ -1,8 +1,21 @@
+from os import environ
+
 db_configs = {
-    "host": 'hostname',
-    "dbname": 'db name',
-    "user": 'user ',
-    "password": 'password'
+    "host": environ.get('HOST_NAME'),
+    "dbname": environ.get('DB_NAME'),
+    "user": environ.get('USER_NAME'),
+    "password": environ.get('PASSWORD')
 }
 
-secret = 'your secret'
+secret = environ.get('SECRET_KEY')
+schema = environ.get('SCHEMA_FILE')
+drop_schema = environ.get('DROP_SCHEMA_FILE')
+
+test_flag = False
+
+test_db_configs = {
+    "host": environ.get('HOST_NAME'),
+    "dbname": environ.get('TEST_DB_NAME'),
+    "user": environ.get('USER_NAME'),
+    "password": environ.get('PASSWORD')
+}
