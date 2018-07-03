@@ -40,6 +40,8 @@ class UserTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_user_login(self):
+        data = json.dumps(self.sample_user)
+        self.test_client.post('/auth/signup', data=data, headers=self.json_headers)
         data = json.dumps(self.sample_login)
         response = self.test_client.post('/auth/login', data=data, headers=self.json_headers)
         results = json.loads(response.data.decode())
