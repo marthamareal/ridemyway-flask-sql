@@ -1,4 +1,3 @@
-
 from flask import Flask
 
 from app.rides.views import blue_print_rides
