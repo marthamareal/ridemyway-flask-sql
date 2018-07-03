@@ -65,7 +65,7 @@ class User:
                 cursor.execute(logged_in, (email, hash_password(password)))
                 return {"message": "You are logged in", "token": token}
             else:
-                return {"message": "Email and password don't match", "email": email, "password": password}
+                return {"message": "Email and password don't match"}
 
     @staticmethod
     def logout(user_id):

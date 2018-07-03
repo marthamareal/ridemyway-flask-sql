@@ -43,6 +43,7 @@ def login():
         _login = User.login_user(arguments["email"],  arguments["password"])
         return jsonify({"user": _login}), 201
     else:
+
         return jsonify(validate_flag), 400
 
 
