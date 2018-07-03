@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify
-from flask_restful import reqparse
+from flask_restful import reqparse, request
+
+from app.decorators import login_required
 from .model import User
 
 blue_print_user = Blueprint('blue_print_user', __name__)
@@ -36,5 +38,7 @@ def login():
 
 
 @blue_print_user.route('/auth/logout',)
+@login_required
 def logout():
-    pass
+    results = User.logout(logout)
+    return jsonify(results)
