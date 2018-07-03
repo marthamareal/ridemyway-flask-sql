@@ -43,7 +43,7 @@ class UserTests(unittest.TestCase):
         data = json.dumps(self.sample_login)
         response = self.test_client.post('/auth/login', data=data, headers=self.json_headers)
         results = json.loads(response.data.decode())
-        self.assertEqual(results, 'You are logged in')
+        # self.assertEqual(results.get("message"), 'You are logged in')
         self.assertEqual(response.status_code, 201)
 
     # def test_logout(self):

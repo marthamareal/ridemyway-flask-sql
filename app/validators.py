@@ -8,13 +8,17 @@ phone_regex = "^\+[0-9]{3}\s[0-9]{9,15}$"
 
 def check_email(email):
     if not re.match(email_regex, email):
-        return {"error": "Enter a valid email"}
+        return False
+    else:
+        return True
 
 
 def check_password(password):
     if re.match(password_regex, password):
         if len(password) < 8:
-            return {"error": "password minimum length is 8 "}
+            return False
+        else:
+            return True
 
 
 class ValidateUserEntries:
@@ -45,5 +49,8 @@ class ValidateUserEntries:
 
     @staticmethod
     def login(email, password):
-        check_email(email)
-        check_password(password)
+
+        if check_email(email) and check_password(password):
+            return "pass"
+        else:
+            return {"error": "Email and password don't match"}
