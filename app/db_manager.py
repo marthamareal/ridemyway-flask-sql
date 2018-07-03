@@ -36,14 +36,14 @@ class DatabaseManager:
 
         except Exception as e:
             logging.error(e)
+            return e
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.commit()
         self.cursor.close()
         self.connection.close()
 
-    def drop_test_connections(self):
-        sql = "truncate users"
-        self.cursor.execute(sql)
+
+
 
 

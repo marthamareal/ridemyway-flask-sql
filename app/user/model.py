@@ -25,35 +25,30 @@ class User:
 
         with DatabaseManager() as cursor:
 
-            validate_flag = ValidateUserEntries.signup(self.f_name, self.l_name,
-                                                       self.email, self.city, self.phone_no, self.password)
-            if validate_flag == "pass":
+            """
+                                check if email already exists
+                            """
+            cursor.execute("SELECT email FROM users WHERE email = ('%s')" % self.email)
+            results = cursor.fetchone()
+
+            if results:
+                return "Email already registered"
+
+            else:
+                """
+                    Create user account in the db
+                """
+                cursor.execute(sql, (self.f_name, self.l_name, self.email,
+                                     self.city, self.phone_no, hash_password(self.password)))
 
                 """
-                    check if email already exists
+                Search for that created user from the db and return values
                 """
-                cursor.execute("SELECT email FROM users WHERE email = ('%s')" % self.email)
-                results = cursor.fetchone()
+                cursor.execute("SELECT * FROM users WHERE email = '%s'" % self.email)
+                result_user = cursor.fetchone()
 
-                if results:
-                    return "Email already registered"
-
-                else:
-                    """
-                        Create user account in the db
-                    """
-                    cursor.execute(sql, (self.f_name, self.l_name, self.email,
-                                         self.city, self.phone_no, hash_password(self.password)))
-
-                    """
-                    Search for that created user from the db and return values
-                    """
-                    cursor.execute("SELECT * FROM users WHERE email = '%s'" % self.email)
-                    result_user = cursor.fetchone()
-
-                    return self.user_json(result_user[0], result_user[1], result_user[2],
-                                          result_user[3], result_user[4], result_user[5], result_user[6], )
-            return validate_flag
+                return self.user_json(result_user[0], result_user[1], result_user[2],
+                                      result_user[3], result_user[4], result_user[5], result_user[6], )
 
     @staticmethod
     def login_user(email, password):
@@ -65,11 +60,12 @@ class User:
             cursor.execute(sql, (email, hash_password(password)))
             results = cursor.fetchone()
             if results:
+
                 token = jwt.encode({'email': email, 'user_id': results[0]}, secret, algorithm='HS256').decode()
                 cursor.execute(logged_in, (email, hash_password(password)))
                 return {"message": "You are logged in", "token": token}
             else:
-                return "Email and password don't match"
+                return {"message": "Email and password don't match", "email": email, "password": password}
 
     @staticmethod
     def logout(user_id):

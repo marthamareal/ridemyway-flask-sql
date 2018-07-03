@@ -3,8 +3,6 @@ from functools import wraps
 import jwt
 
 from flask import jsonify, request
-
-from app.db_manager import DatabaseManager
 from configs import secret
 
 
@@ -23,14 +21,4 @@ def login_required(decorated_function):
 
     return wrapper_func
 
-
-def tear_down(decorated_function):
-
-    @wraps(decorated_function)
-    def wrapper_func(*args, **kwargs):
-        sql = "Delete users"
-        with DatabaseManager() as cursor:
-            cursor.execute(sql)
-            return decorated_function(*args, **kwargs)
-    return wrapper_func()
 

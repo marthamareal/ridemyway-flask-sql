@@ -9,6 +9,7 @@ db_configs = {
 
 secret = environ.get('SECRET_KEY')
 schema = environ.get('SCHEMA_FILE')
+drop_schema = environ.get('DROP_SCHEMA_FILE')
 
 test_flag = False
 
