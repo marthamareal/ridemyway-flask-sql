@@ -1,3 +1,4 @@
+from app.requests import check_request
 from app.rides import check_ride
 from app.user import check_user
 from app import DatabaseManager
@@ -66,4 +67,26 @@ class Request:
 
         return {"message": "You are not registered, Register to request ride"}
 
+    @staticmethod
+    def approve_request(request_id, user_id, status):
+
+        if check_user(user_id):
+            if check_request(request_id):
+
+                # This sql determines whether the user to approve request is owner of ride offer
+                sql = "SELECT creator_id FROM rides WHERE id=(SELECT ride_id FROM requests WHERE id= %s)"
+
+                with DatabaseManager() as cursor:
+                    cursor.execute(sql, [request_id])
+
+                    if cursor.fetchone():
+                        update_sql = "UPDATE requests SET status = '%s' " % status
+                        print(status)
+                        cursor.execute(update_sql)
+                        return {"Message": "Approval action was successful"}
+                    return {"Message": "Access Denied"}
+
+            return {"Message": "Request not found"}
+
+        return {"message": "You are not registered, Register to request ride"}
 
