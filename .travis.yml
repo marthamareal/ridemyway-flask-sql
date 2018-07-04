@@ -14,13 +14,7 @@ script:
     - nosetests app/tests/ --with-coverage
 
 before scripts:
-    -export HOST_NAME='localhost'
-    -export USER_NAME='postgres'
-    -export PASSWORD=''
-    -export SECRET_KEY='SECRET_MANAGER'
-    -export SCHEMA_FILE='./app/tables.sql'
-    -export DROP_SCHEMA_FILE='./app/drop_tables.sql'
-    -export TEST_DB_NAME='test_ride_my_way'
+
     -psql -Upostgres -c "CREATE DATABASE TEST_RIDE_MY_WAY"
 
 after_success:
