@@ -1,3 +1,4 @@
+from app.user import check_user
 from app.db_manager import DatabaseManager
 
 
@@ -16,16 +17,6 @@ def ride_json(_id, ref_no, source, destination, date, creator_id, time, requests
         "requests_no": requests_no
     }
     return ride
-
-
-def check_user(user_id):
-    with DatabaseManager() as cursor:
-        """
-            Check if user exists
-        """
-        cursor.execute("SELECT id FROM users WHERE id = %s", [user_id])
-        exists = cursor.fetchone()
-        return exists
 
 
 def check_user_ride(ride_id, user_id):
