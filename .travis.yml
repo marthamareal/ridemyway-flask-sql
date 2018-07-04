@@ -3,6 +3,8 @@ language: python
 
 python:
     - "3.6"
+service:
+    -postgresql
     
 install:
     - pip install -r requirements.txt
@@ -10,6 +12,9 @@ install:
 
 script:
     - nosetests app/tests/ --with-coverage
+
+before scripts:
+    -psql -Upostgres -c "CREATE DATABASE TEST_RIDE_MY_WAY"
 
 after_success:
     - coveralls
