@@ -21,8 +21,9 @@ class RideTests(unittest.TestCase):
 
     def test_create_ride(self):
         data = json.dumps(self.sample_user)
-        response = self.test_client.post('/', data=data, headers=self.json_headers)
-        self.assertEqual(response.status_code, 201)
+        response = self.test_client.post('/rides/create', data=data, headers=self.json_headers)
+        results = json.loads(response.data.decode())
+        self.assertEqual(response.status_code, 200)
 
     def tearDown(self):
         with app.app_context():

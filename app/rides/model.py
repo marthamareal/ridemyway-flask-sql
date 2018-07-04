@@ -21,20 +21,19 @@ def ride_json(_id, ref_no, source, destination, date, creator_id, time, requests
 
 def check_user_ride(ride_id, user_id):
     """This method returns false when ride is not found and true when user created it"""
-
-    with DatabaseManager() as cursor:
-
-        cursor.execute("SELECT ref_no FROM rides WHERE id = %s", [ride_id])
-
-        if cursor.fetchone():
-
-            cursor.execute("SELECT ref_no FROM rides WHERE creator_id = %s AND id = %s", [user_id, ride_id])
+    try:
+        with DatabaseManager() as cursor:
+            cursor.execute("SELECT ref_no FROM rides WHERE id = %s", [ride_id])
             if cursor.fetchone():
-                return True
 
-            return False
+                cursor.execute("SELECT ref_no FROM rides WHERE creator_id = %s AND id = %s", [user_id, ride_id])
+                if cursor.fetchone():
+                    return True
+                return False
+            return "Ride Not Found"
 
-        return "Not Found"
+    except Exception as e:
+        return e
 
 
 class Ride:
@@ -58,59 +57,69 @@ class Ride:
               " VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id"
 
         with DatabaseManager() as cursor:
-            """
-                Check if user exists
-            """
 
             if check_user(self.creator_id):
+                try:
+                    cursor.execute(sql, (self.ref_no, self.source, self.destination, self.date,
+                                         self.creator_id, self.time, self.requests_no))
 
-                """
-                    Create ride offer in the db
-                """
-                cursor.execute(sql, (self.ref_no, self.source, self.destination, self.date,
-                                     self.creator_id, self.time, self.requests_no))
+                    cursor.execute("SELECT * FROM rides WHERE ref_no = '%s'" % self.ref_no)
+                    result_ride = cursor.fetchone()
 
-                """
-                Search for that created ride from the db and return values
-                """
-                cursor.execute("SELECT * FROM rides WHERE ref_no = '%s'" % self.ref_no)
-                result_ride = cursor.fetchone()
-
-                return ride_json(result_ride[0], result_ride[1], result_ride[2],
-                                 result_ride[3], result_ride[4], result_ride[5], result_ride[6], result_ride[7])
+                    return ride_json(result_ride[0], result_ride[1], result_ride[2],
+                                     result_ride[3], result_ride[4], result_ride[5], result_ride[6], result_ride[7])
+                except Exception as e:
+                    return e
             else:
                 return {"message": "You are not registered, Register to create ride"}
 
     @staticmethod
-    def get_ride(ride_id):
+    def get_ride(user_id, ride_id):
         """
                 This method returns a particular ride from the database
         """
-        with DatabaseManager() as cursor:
-            cursor.execute("SELECT * FROM rides WHERE id = %s", [ride_id])
-            ride = cursor.fetchone()
-            if ride:
-                return ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7])
+        if check_user(user_id):
 
-            return {"Message": "Requested ride is not found"}
+            if check_user_ride(ride_id, user_id) == "Not Found":
+                return {"ride": "ride not found"}
+
+            with DatabaseManager() as cursor:
+                try:
+                    cursor.execute("SELECT * FROM rides WHERE id = %s", [ride_id])
+                    ride = cursor.fetchone()
+                    if ride:
+                        return ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7])
+
+                    return {"Message": "Requested ride is not found"}
+                except Exception as e:
+                    return e
+
+        return {"Message": "Login (create account) to view the offers"}
 
     @staticmethod
-    def get_rides():
+    def get_rides(user_id):
         """
                 This method returns all ride created in our database
         """
         all_rides = []
 
-        with DatabaseManager() as cursor:
-            cursor.execute("SELECT * FROM rides")
-            rides = cursor.fetchall()
-            if rides:
-                for ride in rides:
-                    all_rides.append(ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7]))
+        if check_user(user_id):
 
-                return {"Ride offers": all_rides}
+            with DatabaseManager() as cursor:
+                try:
+                    cursor.execute("SELECT * FROM rides")
+                    rides = cursor.fetchall()
+                    if rides:
+                        for ride in rides:
+                            all_rides.append(
+                                ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7]))
 
-            return {"Message": "No ride Found"}
+                        return {"Ride offers": all_rides}
+                    return {"Message": "No ride Found"}
+                except Exception as e:
+                    return e
+
+        return {"Message": "Login (create account) to view the offers"}
 
     @staticmethod
     def update(ride_id, user_id, source, destination, date, time,):
@@ -122,16 +131,18 @@ class Ride:
             if check_user_ride(ride_id, user_id):
 
                 with DatabaseManager() as cursor:
+                    try:
+                        update = """UPDATE rides SET source = %s, destination = %s, date = %s, time = %s
+                                                                       WHERE id = %s  RETURNING *
+                                                     """
+                        cursor.execute(update, (source, destination, date, time, ride_id))
+                        ride = cursor.fetchone()
 
-                    update = """UPDATE rides SET source = %s, destination = %s, date = %s, time = %s
-                                                                   WHERE id = %s  RETURNING *
-                                                 """
-                    cursor.execute(update, (source, destination, date, time, ride_id))
-                    ride = cursor.fetchone()
-
-                    if ride:
-                        return {"updated ride": ride_json(ride[0], ride[1], ride[2], ride[3],
-                                                          ride[4], ride[5], ride[6], ride[7])}
+                        if ride:
+                            return {"updated ride": ride_json(ride[0], ride[1], ride[2], ride[3],
+                                                              ride[4], ride[5], ride[6], ride[7])}
+                    except Exception as e:
+                        return e
 
             if not check_user_ride(ride_id, user_id):
                 return {"Access Denied": "You can not edit this ride"}
@@ -140,21 +151,19 @@ class Ride:
 
     @staticmethod
     def delete_ride(ride_id, user_id):
-
         """
                 This method deletes a ride which has a provided id
         """
-        if check_user_ride(ride_id, user_id) == "Not Found":
-            return {"ride": "ride not found"}
-
         if check_user(user_id):
             if check_user_ride(ride_id, user_id):
 
                 with DatabaseManager() as cursor:
-
-                    sql = "DELETE FROM rides WHERE id = %s AND creator_id = %s"
-                    cursor.execute(sql, [ride_id, user_id])
-                    return {"message": "Ride offer deleted successfully"}
+                    try:
+                        sql = "DELETE FROM rides WHERE id = %s AND creator_id = %s"
+                        cursor.execute(sql, [ride_id, user_id])
+                        return {"message": "Ride offer deleted successfully"}
+                    except Exception as e:
+                        return e
 
             if not check_user_ride(ride_id, user_id):
                 return {"Access Denied": "You can not delete this ride"}
@@ -163,15 +172,15 @@ class Ride:
 
     @staticmethod
     def generate_ref_no():
-
         sql = "SELECT id FROM rides WHERE id = (select max(id) from rides)"
+
         with DatabaseManager() as cursor:
-            cursor.execute(sql)
-            results = cursor.fetchone()
-            if results:
-                return "RF00" + str(results[0] + 1)
-            else:
-                return "RF001"
-
-
-
+            try:
+                cursor.execute(sql)
+                results = cursor.fetchone()
+                if results:
+                    return "RF00" + str(results[0] + 1)
+                else:
+                    return "RF001"
+            except Exception as e:
+                return e

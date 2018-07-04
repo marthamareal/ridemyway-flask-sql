@@ -3,7 +3,7 @@ import re
 name_regex = "^[a-zA-Z]{3,25}$"
 address_regex = "^[a-zA-Z0-9,-s]{3,45}$"
 email_regex = "^[a-zA-Z0-9]+@[a-z]+\.[a-z]{2,4}$"
-password_regex = "^[a-z|A-Z|0-9|@#$%^&!]+"
+password_regex = "^[a-z|A-Z|0-9|^\s|\s$@#$%^&!]+"
 phone_regex = "^\+[0-9]{3}\s[0-9]{9,15}$"
 id_regex = "^[1-9]+[0-9]*$"
 time_regex = "^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s(AM|PM)$"
@@ -18,7 +18,7 @@ def check_email(email):
 
 
 def check_password(password):
-    if re.match(password_regex, password):
+    if re.match(password_regex, password.lstrip(' ')):
         if len(password) < 8:
             return False
         else:
@@ -54,7 +54,6 @@ def check_time(time):
 
 
 def check_date(date):
-    print(date)
     if not re.match(date_regex, date):
         return False
     else:
@@ -67,10 +66,10 @@ class ValidateUserEntries:
     def signup(f_name, l_name, email, city, phone_no, password):
 
         if not check_name(f_name):
-            return {"error": "first name must have at least 3 characters and no numbers in it"}
+            return {"error": "first name must have at least 3 characters and no numbers and spaces in it"}
 
         if not check_name(l_name):
-            return {"error": "last name must have at least 3 characters and no numbers in it"}
+            return {"error": "last name must have at least 3 characters and no numbers and spacesin it"}
 
         if not check_name(city):
             return {"error": "city must have at least 3 characters"}
@@ -78,9 +77,11 @@ class ValidateUserEntries:
         if not re.match(phone_regex, phone_no):
             return {"error": "Enter a valid phone number eg +256 77777788"}
 
-        check_password(password)
+        if not check_password(password):
+            return {"error": "password length must be 8 ore more"}
 
-        check_email(email)
+        if not check_email(email):
+            return {"error": "Provide a valid email"}
 
         return "pass"
 

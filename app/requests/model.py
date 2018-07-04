@@ -33,13 +33,17 @@ class Request:
              Check if user exists
         """
         if check_user(self.user_id):
-            with DatabaseManager() as cursor:
-                if check_ride(self.ride_id):
-                    cursor.execute(sql, (self.ride_id, self.user_id, self.status))
-                    if cursor.fetchone():
-                        return {"Message": "request made successfully"}
-                    return {"Message": "Failed to make request"}
-                return {"message": "Ride not found"}
+
+            try:
+                with DatabaseManager() as cursor:
+                    if check_ride(self.ride_id):
+                        cursor.execute(sql, (self.ride_id, self.user_id, self.status))
+                        if cursor.fetchone():
+                            return {"Message": "request made successfully"}
+                        return {"Message": "Failed to make request"}
+                    return {"message": "Ride not found"}
+            except Exception as e:
+                return e
         else:
             return {"message": "You are not registered, Register to request ride"}
 
@@ -53,17 +57,21 @@ class Request:
             Check if user exists
         """
         if check_user(user_id):
-            with DatabaseManager() as cursor:
-                if check_ride(ride_id):
-                    cursor.execute(sql, [ride_id])
-                    results = cursor.fetchall()
-                    if results:
-                        for result in results:
-                            all_requests_on_given_ride.append(request_json(result[0], result[1], result[2], result[3]))
-                        return {"Ride's requests": all_requests_on_given_ride}
-                    return {"message": "Ride has no requests"}
 
-                return {"Message": "Ride not Found"}
+            try:
+                with DatabaseManager() as cursor:
+                    if check_ride(ride_id):
+                        cursor.execute(sql, [ride_id])
+                        results = cursor.fetchall()
+                        if results:
+                            for result in results:
+                                all_requests_on_given_ride.append(request_json(result[0], result[1], result[2], result[3]))
+                            return {"Ride's requests": all_requests_on_given_ride}
+                        return {"message": "Ride has no requests"}
+
+                    return {"Message": "Ride not Found"}
+            except Exception as e:
+                return e
 
         return {"message": "You are not registered, Register to request ride"}
 
@@ -75,16 +83,18 @@ class Request:
 
                 # This sql determines whether the user to approve request is owner of ride offer
                 sql = "SELECT creator_id FROM rides WHERE id=(SELECT ride_id FROM requests WHERE id= %s)"
+                try:
+                    with DatabaseManager() as cursor:
+                        cursor.execute(sql, [request_id])
 
-                with DatabaseManager() as cursor:
-                    cursor.execute(sql, [request_id])
-
-                    if cursor.fetchone():
-                        update_sql = "UPDATE requests SET status = '%s' " % status
-                        print(status)
-                        cursor.execute(update_sql)
-                        return {"Message": "Approval action was successful"}
-                    return {"Message": "Access Denied"}
+                        if cursor.fetchone():
+                            update_sql = "UPDATE requests SET status = '%s' " % status
+                            print(status)
+                            cursor.execute(update_sql)
+                            return {"Message": "Approval action was successful"}
+                        return {"Message": "Access Denied"}
+                except Exception as e:
+                    return e
 
             return {"Message": "Request not found"}
 

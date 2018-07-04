@@ -1,6 +1,6 @@
-from flask import Blueprint, jsonify
-from flask_restful import reqparse
+import json
 
+from flask import Blueprint, jsonify, request
 from app.decorators import login_required
 from app.validators import ValidateUserEntries
 from .model import User
@@ -10,22 +10,32 @@ blue_print_user = Blueprint('blue_print_user', __name__)
 
 @blue_print_user.route('/auth/signup', methods=['POST'])
 def signup():
-    parser = reqparse.RequestParser()
-    parser.add_argument("first name")
-    parser.add_argument("last name")
-    parser.add_argument("email")
-    parser.add_argument("city")
-    parser.add_argument("phone_no")
-    parser.add_argument("password")
+    args = json.loads(request.data.decode())
 
-    arguments = parser.parse_args()
-    
-    validate_flag = ValidateUserEntries.signup(arguments["first name"], arguments["last name"], arguments["email"],
-                                               arguments["city"], arguments["phone_no"], arguments["password"])
+    if not args.get("first name"):
+        return jsonify({"message": "Field 'first name' is required"})
+    if not args.get("last name"):
+        return jsonify({"message": "Field 'last name' is required"})
+    if not args.get("email"):
+        return jsonify({"message": "Field 'email' is required"})
+    if not args.get("city"):
+        return jsonify({"message": "Field 'city' is required"})
+    if not args.get("phone_no"):
+        return jsonify({"message": "Field 'phone_no' is required"})
+    if not args.get("password"):
+        return jsonify({"message": "Field 'password' is required"})
+
+    first_name = args.get("first name")
+    last_name = args.get("last name")
+    email = args.get("email")
+    city = args.get("city")
+    phone_no = args.get("phone_no")
+    password = args.get("password")
+
+    validate_flag = ValidateUserEntries.signup(first_name, last_name, email, city, phone_no, password)
     if validate_flag == "pass":
 
-        user = User(arguments["first name"], arguments["last name"], arguments["email"],
-                    arguments["city"], arguments["phone_no"], arguments["password"])
+        user = User(first_name, last_name, email, city, phone_no, password)
         created_user = User.create_user(user)
         return jsonify({"user": created_user}), 201
     else:
@@ -34,15 +44,20 @@ def signup():
 
 @blue_print_user.route('/auth/login', methods=['POST'])
 def login():
-    parser = reqparse.RequestParser()
-    parser.add_argument("email")
-    parser.add_argument("password")
-    arguments = parser.parse_args()
+    args = json.loads(request.data.decode())
 
-    validate_flag = ValidateUserEntries.login(arguments["email"],  arguments["password"])
+    if not args.get("email"):
+        return jsonify({"message": "Field 'email' is required"})
+    if not args.get("password"):
+        return jsonify({"message": "Field 'password' is required"})
+
+    email = args.get("email")
+    password = args.get("password")
+
+    validate_flag = ValidateUserEntries.login(email, password)
 
     if validate_flag == "pass":
-        _login = User.login_user(arguments["email"],  arguments["password"])
+        _login = User.login_user(email, password)
         return jsonify({"user": _login}), 201
     else:
 
