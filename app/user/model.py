@@ -48,7 +48,7 @@ class User:
                 result_user = cursor.fetchone()
 
                 return self.user_json(result_user[0], result_user[1], result_user[2],
-                                      result_user[3], result_user[4], result_user[5], result_user[6], )
+                                      result_user[3], result_user[4], result_user[5], result_user[6])
 
     @staticmethod
     def login_user(email, password):
@@ -62,6 +62,7 @@ class User:
             if results:
 
                 token = jwt.encode({'email': email, 'user_id': results[0]}, secret, algorithm='HS256').decode()
+
                 cursor.execute(logged_in, (email, hash_password(password)))
                 return {"message": "You are logged in", "token": token}
             else:
@@ -70,9 +71,9 @@ class User:
     @staticmethod
     def logout(user_id):
         with DatabaseManager() as cursor:
-
-            logged_out = "update users set logged_in = FALSE where id = %s"
-            cursor.execute(logged_out, user_id)
+            print(user_id)
+            logged_out = "update users set logged_in = FALSE where id = %s returning id"
+            cursor.execute(logged_out, [user_id])
             results = cursor.fetchone()
             if results:
                 return {"Message": "You are logged out successfully"}

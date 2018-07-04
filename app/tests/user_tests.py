@@ -3,31 +3,15 @@ import json
 
 from app import app
 from app.db_manager import DatabaseManager
-from app.user.model import hash_password
 from configs import drop_schema
-
-
-def create_sample_user(f_name, l_name, email, city, phone_no, password):
-    user = {
-        "id": 1,
-        "first name": f_name,
-        "last name": l_name,
-        "email": email,
-        "city": city,
-        "phone_no": phone_no,
-        "password": hash_password(password)
-    }
-    return user
+from app.tests.test_samples import TestSamples
 
 
 class UserTests(unittest.TestCase):
 
     json_headers = {'Content-Type': 'application/json'}
-    sample_user = create_sample_user("test", "martha", "marthamareal@gmail.com",
-                                     "kampala", "+256 7556663367", "passworder")
-
-    sample_login = {"email": 'marthamareal@gmail.com', "password": 'passworder'}
-    sample_logout = {"user_id": 1}
+    user = TestSamples.sample_user()
+    user_logedin = TestSamples.sample_login()
 
     def setUp(self):
         app.config['TESTING'] = True
@@ -35,21 +19,18 @@ class UserTests(unittest.TestCase):
         self.test_client = app.test_client()
 
     def test_create_user(self):
-        data = json.dumps(self.sample_user)
+        data = json.dumps(self.user)
         response = self.test_client.post('/auth/signup', data=data, headers=self.json_headers)
         self.assertEqual(response.status_code, 201)
 
     def test_user_login(self):
-        data = json.dumps(self.sample_user)
+        data = json.dumps(self.user)
         self.test_client.post('/auth/signup', data=data, headers=self.json_headers)
-        data = json.dumps(self.sample_login)
+        data = json.dumps(self.user_logedin)
         response = self.test_client.post('/auth/login', data=data, headers=self.json_headers)
         results = json.loads(response.data.decode())
         # self.assertEqual(results.get("message"), 'You are logged in')
         self.assertEqual(response.status_code, 201)
-
-    # def test_logout(self):
-    #     self.assertEqual()
 
     def tearDown(self):
         with app.app_context():

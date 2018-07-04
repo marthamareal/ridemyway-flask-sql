@@ -14,11 +14,13 @@ def login_required(decorated_function):
 
         if not token:
             return jsonify({"Error": "Please supply the token in headers"})
+        try:
+            details = jwt.decode(token, secret)
+            user_id = details["user_id"]
+            return decorated_function(user_id, *args, **kwargs)
 
-        details = jwt.decode(token, secret, algorithms='HS256', verify=False)
-        print(details)
-
-        return decorated_function()
+        except jwt.InvalidTokenError:
+            return {"error": "invalid token"}
 
     return wrapper_func
 

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from flask_restful import reqparse, request
+from flask_restful import reqparse
 
 from app.decorators import login_required
 from app.validators import ValidateUserEntries
@@ -17,11 +17,13 @@ def signup():
     parser.add_argument("city")
     parser.add_argument("phone_no")
     parser.add_argument("password")
+
     arguments = parser.parse_args()
-    print(arguments)
+    
     validate_flag = ValidateUserEntries.signup(arguments["first name"], arguments["last name"], arguments["email"],
                                                arguments["city"], arguments["phone_no"], arguments["password"])
     if validate_flag == "pass":
+
         user = User(arguments["first name"], arguments["last name"], arguments["email"],
                     arguments["city"], arguments["phone_no"], arguments["password"])
         created_user = User.create_user(user)
@@ -47,8 +49,8 @@ def login():
         return jsonify(validate_flag), 400
 
 
-@blue_print_user.route('/auth/logout',)
+@blue_print_user.route('/auth/logout', methods=['POST'])
 @login_required
-def logout():
-    results = User.logout(logout)
+def logout(user_id):
+    results = User.logout(user_id)
     return jsonify(results)

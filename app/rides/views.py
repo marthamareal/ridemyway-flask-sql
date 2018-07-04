@@ -1,13 +1,15 @@
 from flask import jsonify, Blueprint
 from flask_restful import reqparse
 
+from app.decorators import login_required
 from app.rides.model import Ride
 from app.validators import ValidateUserEntries
 
 blue_print_rides = Blueprint('blue_print_rides', __name__)
 
 
-@blue_print_rides.route('/api/v1/rides/create/<int:user_id>', methods=['POST'])
+@blue_print_rides.route('/rides/create', methods=['POST'])
+@login_required
 def _create_ride(user_id):
     parser = reqparse.RequestParser()
     parser.add_argument("date")
@@ -30,19 +32,22 @@ def _create_ride(user_id):
 
 
 @blue_print_rides.route('/rides/<int:ride_id>', methods=['GET'])
-def show_ride(ride_id):
+@login_required
+def show_ride(user_id, ride_id):
     ride = Ride.get_ride(ride_id)
     return jsonify({"ride": ride}), 200
 
 
 @blue_print_rides.route('/rides', methods=['GET'])
-def get_all_rides():
+@login_required
+def get_all_rides(user_id):
     rides = Ride.get_rides()
     return jsonify(rides), 200
 
 
-@blue_print_rides.route('/rides/update/<int:ride_id>/<int:user_id>', methods=['PUT'])
-def update_ride_offer(ride_id, user_id):
+@blue_print_rides.route('/rides/update/<int:ride_id>', methods=['PUT'])
+@login_required
+def update_ride_offer(user_id, ride_id):
     parser = reqparse.RequestParser()
     parser.add_argument("date")
     parser.add_argument("time")
@@ -63,8 +68,9 @@ def update_ride_offer(ride_id, user_id):
     return jsonify(validate_flag)
 
 
-@blue_print_rides.route('/rides/delete/<int:ride_id>/<int:user_id>', methods=['DELETE'])
-def delete_one_ride(ride_id, user_id):
+@blue_print_rides.route('/rides/delete/<int:ride_id>', methods=['DELETE'])
+@login_required
+def delete_one_ride(user_id, ride_id):
     results = Ride.delete_ride(ride_id, user_id)
     return jsonify(results), 200
 
