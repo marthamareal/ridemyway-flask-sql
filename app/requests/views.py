@@ -15,7 +15,7 @@ def create_request(user_id, ride_id):
         if check_id(ride_id):
             instance = Request(user_id, ride_id, "pending")
             results = Request.create_request(instance)
-            return make_response(jsonify(results), 201)
+            return make_response(jsonify({"message": results.get('message')}), results.get('code'))
         return make_response({"error": "ride id must be integer"}, 400)
     except Exception as e:
         print(e)
@@ -28,7 +28,8 @@ def get_requests(user_id, ride_id):
     try:
         if check_id(ride_id):
             requests = Request.get_ride_requests(ride_id, user_id)
-            return make_response(jsonify(requests), 200)
+            results = jsonify(requests)
+            return make_response(results, 200)
         return make_response({"error": "ride id must be integer"}, 400)
     except Exception as e:
         print(e)
@@ -46,7 +47,7 @@ def approve_ride_request(user_id, request_id):
             approval = inputs.get("approval")
             results = Request.approve_request(request_id, user_id, approval)
 
-            return jsonify(results), 200
+            return jsonify(results), 201
         return make_response({"error": "request id must be integer"}, 400)
     except Exception as e:
         print(e)

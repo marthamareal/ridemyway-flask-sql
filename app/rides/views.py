@@ -98,7 +98,9 @@ def delete_one_ride(user_id, ride_id):
     try:
         if check_id(ride_id):
             results = Ride.delete_ride(ride_id, user_id)
+
             return make_response(jsonify(results), 201)
+
         return make_response(jsonify({"error": "ride id must be integer"}), 400)
     except Exception as e:
         print(e)
