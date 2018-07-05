@@ -11,8 +11,7 @@ blue_print_rides = Blueprint('blue_print_rides', __name__)
 @blue_print_rides.route('/rides/create', methods=['POST'])
 @login_required
 def create_ride(user_id):
-    args = json.loads(request.data.decode)
-
+    args = json.loads(request.data.decode())
     if not args.get("date"):
         return jsonify({"message": "Field 'date' is required"})
     if not args.get("time"):
@@ -58,7 +57,7 @@ def get_all_rides(user_id):
 @login_required
 def update_ride_offer(user_id, ride_id):
 
-    args = json.loads(request.data.decode)
+    args = json.loads(request.data.decode())
     date = args.get("date")
     time = args.get("time")
     source = args.get("source")

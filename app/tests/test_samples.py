@@ -1,6 +1,3 @@
-from app.user.model import hash_password
-
-
 class TestSamples:
 
     @staticmethod
@@ -13,7 +10,7 @@ class TestSamples:
             "email": "marthamareal@gmail.com",
             "city": "kampala",
             "phone_no": "+256 7556663367",
-            "password": hash_password("passworder")
+            "password": "passworder"
         }
         return user
 
@@ -28,7 +25,22 @@ class TestSamples:
             "source": "Makerere",
             "destination": "Towm",
             "creator_id": 1,
-            "requests_no": 0
+            "requests_no": '0'
+        }
+
+        return ride
+
+    @staticmethod
+    def sample_updated_ride():
+        ride = {
+            "id": 1,
+            "ref_no": "RF001",
+            "date": "02/03/2017",
+            "time": "10:30 PM",
+            "source": "new",
+            "destination": "new",
+            "creator_id": 1,
+            "requests_no": '0'
         }
 
         return ride

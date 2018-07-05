@@ -30,7 +30,6 @@ class DatabaseManager:
                     raise e
 
             return self.cursor
-
         except psycopg2.ProgrammingError as error:
             logging.error(error)
 
