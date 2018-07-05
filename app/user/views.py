@@ -10,21 +10,20 @@ blue_print_user = Blueprint('blue_print_user', __name__)
 @blue_print_user.route('/auth/signup', methods=['POST'])
 def signup():
     try:
-
         args = json.loads(request.data.decode())
 
         if not args.get("first name"):
-            return jsonify({"message": "Field 'first name' is required"})
+            return make_response(jsonify({"message": "Field 'first name' is required"}), 400)
         if not args.get("last name"):
-            return jsonify({"message": "Field 'last name' is required"})
+            return make_response(jsonify({"message": "Field 'last name' is required"}), 400)
         if not args.get("email"):
-            return jsonify({"message": "Field 'email' is required"})
+            return make_response(jsonify({"message": "Field 'email' is required"}), 400)
         if not args.get("city"):
-            return jsonify({"message": "Field 'city' is required"})
+            return make_response(jsonify({"message": "Field 'city' is required"}), 400)
         if not args.get("phone_no"):
-            return jsonify({"message": "Field 'phone_no' is required"})
+            return make_response(jsonify({"message": "Field 'phone_no' is required"}), 400)
         if not args.get("password"):
-            return jsonify({"message": "Field 'password' is required"})
+            return make_response(jsonify({"message": "Field 'password' is required"}), 400)
 
         first_name = args.get("first name")
         last_name = args.get("last name")
@@ -39,45 +38,54 @@ def signup():
 
             user = User(first_name, last_name, email, city, phone_no, password)
             created_user = User.create_user(user)
-            return jsonify({"user": created_user}), 201
+            return make_response(jsonify({"user": created_user}), 201)
         else:
-            return jsonify(validate_flag)
+            return make_response(validate_flag, 400)
 
-    except FileNotFoundError as e:
-        return jsonify({"Oops": e})
+    except Exception as e:
+        print(e)
+        return make_response("Some thing went wrong on the server", 500)
 
 
 @blue_print_user.route('/auth/login', methods=['POST'])
 def login():
-    args = json.loads(request.data.decode())
+    try:
+        args = json.loads(request.data.decode())
 
-    if not args.get("email"):
-        return jsonify({"message": "Field 'email' is required"})
-    if not args.get("password"):
-        return jsonify({"message": "Field 'password' is required"})
+        if not args.get("email"):
+            return make_response(jsonify({"message": "Field 'email' is required"}), 400)
+        if not args.get("password"):
+            return make_response(jsonify({"message": "Field 'password' is required"}), 400)
 
-    email = args.get("email")
-    password = args.get("password")
+        email = args.get("email")
+        password = args.get("password")
 
-    validate_flag = ValidateUserEntries.login(email, password)
+        validate_flag = ValidateUserEntries.login(email, password)
 
-    if validate_flag == "pass":
-        _login = User.login_user(email, password)
-        return jsonify({"user": _login}), 201
-    else:
+        if validate_flag == "pass":
+            _login = User.login_user(email, password)
+            return make_response(jsonify({"user": _login}), 201)
+        else:
 
-        return jsonify(validate_flag), 400
+            return make_response(jsonify(validate_flag), 400)
+    except Exception as e:
+        print(e)
+        return make_response("Some thing went wrong on the server", 500)
 
 
 @blue_print_user.route('/auth/logout', methods=['POST'])
 @login_required
 def logout(user_id):
-    results = User.logout(user_id)
-    return jsonify(results)
+    try:
+        results = User.logout(user_id)
+        return make_response(jsonify(results), 200)
+    except Exception as e:
+        print(e)
+        return make_response("Some thing went wrong on the server", 500)
 
 
 @blue_print_user.errorhandler(404)
 def url_not_found(error):
     print(error)
-    return jsonify({"Message": "Requested url is not found"})
+    return make_response(jsonify({"Message": "Requested url is not found"}), 404)
 
