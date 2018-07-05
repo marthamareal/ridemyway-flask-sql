@@ -18,7 +18,8 @@ def login_required(decorated_function):
             try:
                 details = jwt.decode(token, secret, verify=False)
             except Exception as e:
-                return jsonify({"Error": "Invalid Token"})
+                print(e)
+                return jsonify({"Error": "Invalid Token, Fill in a valid token"})
 
             user_id = details["user_id"]
             return decorated_function(user_id, *args, **kwargs)

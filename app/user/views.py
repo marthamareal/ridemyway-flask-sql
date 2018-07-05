@@ -83,9 +83,3 @@ def logout(user_id):
         print(e)
         return make_response("Some thing went wrong on the server", 500)
 
-
-@blue_print_user.errorhandler(404)
-def url_not_found(error):
-    print(error)
-    return make_response(jsonify({"Message": "Requested url is not found"}), 404)
-
