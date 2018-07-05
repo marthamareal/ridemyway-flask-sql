@@ -2,7 +2,7 @@ from functools import wraps
 
 import jwt
 
-from flask import jsonify, request
+from flask import jsonify, request, make_response
 from configs import secret
 
 
@@ -13,19 +13,19 @@ def login_required(decorated_function):
         token = request.headers.get("token")
 
         if not token:
-            return jsonify({"Error": "Please supply the token in headers"})
+            return make_response(jsonify({"Error": "Please supply the token in headers"}), 400)
         try:
             try:
                 details = jwt.decode(token, secret, verify=False)
             except Exception as e:
                 print(e)
-                return jsonify({"Error": "Invalid Token, Fill in a valid token"})
+                return make_response(jsonify({"Error": "Invalid Token, Fill in a valid token"}), 400)
 
             user_id = details["user_id"]
             return decorated_function(user_id, *args, **kwargs)
 
         except jwt.InvalidTokenError:
-            return {"error": "invalid token"}
+            return make_response({"error": "invalid token"}, 400)
 
     return wrapper_func
 

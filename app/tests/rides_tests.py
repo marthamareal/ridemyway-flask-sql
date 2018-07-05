@@ -41,6 +41,7 @@ class RideTests(unittest.TestCase):
         response = self.test_client.get('/rides/1', headers=self.login_headers)
         results = json.loads(response.data.decode())
         self.assertEqual(results, {"ride": self.sample_ride})
+        self.assertEqual(response.status_code, 200)
 
     def test_get_rides(self):
         data = json.dumps(self.sample_ride)
@@ -48,6 +49,7 @@ class RideTests(unittest.TestCase):
         response = self.test_client.get('/rides', headers=self.login_headers)
         results = json.loads(response.data.decode())
         self.assertEqual(results, {"Ride offers": [self.sample_ride]})
+        self.assertEqual(response.status_code, 200)
 
     def test_update_ride_offer(self):
         data = json.dumps(self.sample_ride)
@@ -58,6 +60,15 @@ class RideTests(unittest.TestCase):
         response = self.test_client.put('/rides/update/1', data=new_data, headers=self.login_headers)
         results = json.loads(response.data.decode())
         self.assertEqual(results, {"updated ride": self.sample_updated_ride})
+        self.assertEqual(response.status_code, 201)
+
+    def test_delete_ride_offer(self):
+        data = json.dumps(self.sample_ride)
+        self.test_client.post('/rides/create', data=data, headers=self.login_headers)
+        response = self.test_client.delete('/rides/delete/1', headers=self.login_headers)
+        results = json.loads(response.data.decode())
+        self.assertEqual(results, {'message': 'Ride offer deleted successfully'})
+        self.assertEqual(response.status_code, 201)
 
     def tearDown(self):
         with app.app_context():

@@ -39,13 +39,25 @@ class Request:
                     if check_ride(self.ride_id):
                         cursor.execute(sql, (self.ride_id, self.user_id, self.status))
                         if cursor.fetchone():
-                            return {"Message": "request made successfully"}
-                        return {"Message": "Failed to make request"}
-                    return {"message": "Ride not found"}
+                            return {
+                                       "message": "request made successfully",
+                                       "code": 201
+                                   }
+                        return {
+                            "Message": "Failed to make request"
+                        }
+
+                    return {
+                               "message": "Ride not found",
+                               "code": 400
+                           }
             except Exception as e:
                 return e
         else:
-            return {"message": "You are not registered, Register to request ride"}
+            return {
+                       "message": "You are not registered, Register to request ride",
+                       "code": 401
+                    }
 
     @staticmethod
     def get_ride_requests(ride_id, user_id):
@@ -65,15 +77,24 @@ class Request:
                         results = cursor.fetchall()
                         if results:
                             for result in results:
-                                all_requests_on_given_ride.append(request_json(result[0], result[1], result[2], result[3]))
-                            return {"Ride's requests": all_requests_on_given_ride}
-                        return {"message": "Ride has no requests"}
+                                all_requests_on_given_ride.append(request_json(result[0],
+                                                                               result[1], result[2], result[3]))
+                            return {
+                                "Ride's requests": all_requests_on_given_ride
+                            }
+                        return {
+                            "message": "Ride has no requests"
+                        }
 
-                    return {"Message": "Ride not Found"}
+                    return {
+                        "Message": "Ride not Found"
+                    }
             except Exception as e:
                 return e
 
-        return {"message": "You are not registered, Register to request ride"}
+        return {
+            "message": "You are not registered, Register to request ride"
+        }
 
     @staticmethod
     def approve_request(request_id, user_id, status):
