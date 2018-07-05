@@ -46,6 +46,12 @@ class TestSamples:
         return ride
 
     @staticmethod
+    def sample_approve():
+        return {
+            "approval": "Yes"
+        }
+
+    @staticmethod
     def sample_login():
 
         return {"email": 'marthamareal@gmail.com', "password": 'passworder'}
