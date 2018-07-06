@@ -9,7 +9,7 @@ from app.validators import ValidateUserEntries, check_id
 blue_print_rides = Blueprint('blue_print_rides', __name__)
 
 
-@swag_from('/api/apidocs/create_ride.yml')
+@swag_from('/app/apidocs/create_ride.yml')
 @blue_print_rides.route('/rides/create', methods=['POST'])
 @login_required
 def create_ride(user_id):
@@ -44,7 +44,7 @@ def create_ride(user_id):
         return make_response("Some thing went wrong on the server", 500)
 
 
-@swag_from('/api/apidocs/get_ride.yml')
+@swag_from('/app/apidocs/get_ride.yml')
 @blue_print_rides.route('/rides/<int:ride_id>', methods=['GET'])
 @login_required
 def show_ride(user_id, ride_id):
@@ -58,7 +58,7 @@ def show_ride(user_id, ride_id):
         return make_response("Some thing went wrong on the server", 500)
 
 
-@swag_from('/api/apidocs/get_rides.yml')
+@swag_from('/app/apidocs/get_rides.yml')
 @blue_print_rides.route('/rides', methods=['GET'])
 @login_required
 def get_all_rides(user_id):
@@ -99,7 +99,7 @@ def update_ride_offer(user_id, ride_id):
         return make_response("Some thing went wrong on the server", 500)
 
 
-@swag_from('/api/apidocs/delete_ride.yml')
+@swag_from('/app/apidocs/delete_ride.yml')
 @blue_print_rides.route('/rides/delete/<int:ride_id>', methods=['DELETE'])
 @login_required
 def delete_one_ride(user_id, ride_id):
