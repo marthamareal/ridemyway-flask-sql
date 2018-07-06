@@ -25,7 +25,8 @@ class User:
         try:
             with DatabaseManager() as cursor:
                 # check if email already exists
-                cursor.execute("SELECT email FROM users WHERE email = ('%s')" % self.email)
+                cursor.execute(
+                    "SELECT email FROM users WHERE email = ('%s')" % self.email)
                 results = cursor.fetchone()
 
                 if results:
@@ -35,7 +36,8 @@ class User:
                     cursor.execute(sql, (self.f_name, self.l_name, self.email,
                                          self.city, self.phone_no, hash_password(self.password)))
 
-                    cursor.execute("SELECT * FROM users WHERE email = '%s'" % self.email)
+                    cursor.execute(
+                        "SELECT * FROM users WHERE email = '%s'" % self.email)
                     result_user = cursor.fetchone()
 
                     return self.user_json(result_user[0], result_user[1], result_user[2],
@@ -55,7 +57,8 @@ class User:
                 results = cursor.fetchone()
                 if results:
 
-                    token = jwt.encode({'email': email, 'user_id': results[0]}, secret, algorithm='HS256').decode()
+                    token = jwt.encode(
+                        {'email': email, 'user_id': results[0]}, secret, algorithm='HS256').decode()
 
                     cursor.execute(logged_in, (email, hash_password(password)))
                     return {"message": "You are logged in", "token": token}
@@ -91,6 +94,5 @@ class User:
 
 
 def hash_password(_password):
-        result = hashlib.md5(_password.encode())
-        return result.hexdigest()
-
+    result = hashlib.md5(_password.encode())
+    return result.hexdigest()
