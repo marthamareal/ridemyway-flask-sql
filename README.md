@@ -7,39 +7,25 @@
 ### Installations
 
 create a virtual environment with (virtualenv yourEnv).
-
 Activate the virtual environment. (source yourEnv/bin/activate)
-
 Install postgres
-
-install python (pip install python)
-
-Install Flask (pip install flask)
+install [Python](https://www.python.org/)
+Install [Flask](http://flask.pocoo.org/docs/1.0/installation/)
 
 Install requirements (pip freeze > requirements.txt)
 
 ### Configurations
 
 Create a .env file in your project
-
 inside that file, export your enviroment variables by adding these lines.
-
 export HOST_NAME='host_name'
-
 export DB_NAME='your db'
-
 export USER_NAME='your user name'
-
 export PASSWORD='your password'
-
 export SECRET_KEY='your secret' for creating tokens
-
 export SCHEMA_FILE='path to tables.sql file in the project'
-
 export DROP_SCHEMA_FILE='path to drop_tables.sql file in the project'
-
 export TEST_DB_NAME='your test database' for running tests
-
 
 ### Endpoints in the API
 
@@ -56,3 +42,11 @@ export TEST_DB_NAME='your test database' for running tests
 |POST| /rides/requests/create/<int:ride_id> |Request to join ride|
 |GET| /rides/requests/<int:ride_id> |Get all requests on particular ride|
 |POST,PUT| /rides/requests/approve/<int:request_id> |Approve ride request|
+
+## Deployment
+
+install [flassger](https://pypi.org/project/flasgger/) for documenting the api
+
+Application is deployed using Heroku.
+
+checkout on [View App](https://ride-my-way-api-database.herokuapp.com)

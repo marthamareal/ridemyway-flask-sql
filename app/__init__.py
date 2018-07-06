@@ -1,4 +1,4 @@
-from flask import Flask, make_response, jsonify
+from flask import Flask, make_response, jsonify, redirect
 
 from app.db_manager import DatabaseManager
 from app.requests.views import blue_print_requests
@@ -10,6 +10,11 @@ app = Flask(__name__)
 app.register_blueprint(blue_print_user)
 app.register_blueprint(blue_print_rides)
 app.register_blueprint(blue_print_requests)
+
+
+@app.route('/')
+def index():
+    return redirect('/apidocs/')
 
 
 @app.route('/<path:path>', methods=['POST', 'GET', 'PUT', 'DELETE'])

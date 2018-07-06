@@ -26,7 +26,8 @@ def check_user_ride(ride_id, user_id):
             cursor.execute("SELECT ref_no FROM rides WHERE id = %s", [ride_id])
             if cursor.fetchone():
 
-                cursor.execute("SELECT ref_no FROM rides WHERE creator_id = %s AND id = %s", [user_id, ride_id])
+                cursor.execute("SELECT ref_no FROM rides WHERE creator_id = %s AND id = %s", [
+                               user_id, ride_id])
                 if cursor.fetchone():
                     return True
                 return False
@@ -63,7 +64,8 @@ class Ride:
                     cursor.execute(sql, (self.ref_no, self.source, self.destination, self.date,
                                          self.creator_id, self.time, self.requests_no))
 
-                    cursor.execute("SELECT * FROM rides WHERE ref_no = '%s'" % self.ref_no)
+                    cursor.execute(
+                        "SELECT * FROM rides WHERE ref_no = '%s'" % self.ref_no)
                     result_ride = cursor.fetchone()
 
                     return ride_json(result_ride[0], result_ride[1], result_ride[2],
@@ -85,7 +87,8 @@ class Ride:
 
             with DatabaseManager() as cursor:
                 try:
-                    cursor.execute("SELECT * FROM rides WHERE id = %s", [ride_id])
+                    cursor.execute(
+                        "SELECT * FROM rides WHERE id = %s", [ride_id])
                     ride = cursor.fetchone()
                     if ride:
                         return ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7])
@@ -135,7 +138,8 @@ class Ride:
                         update = """UPDATE rides SET source = %s, destination = %s, date = %s, time = %s
                                                                        WHERE id = %s  RETURNING *
                                                      """
-                        cursor.execute(update, (source, destination, date, time, ride_id))
+                        cursor.execute(
+                            update, (source, destination, date, time, ride_id))
                         ride = cursor.fetchone()
 
                         if ride:

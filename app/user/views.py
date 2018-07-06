@@ -32,7 +32,8 @@ def signup():
         phone_no = args.get("phone_no")
         password = args.get("password")
 
-        validate_flag = ValidateUserEntries.signup(first_name, last_name, email, city, phone_no, password)
+        validate_flag = ValidateUserEntries.signup(
+            first_name, last_name, email, city, phone_no, password)
 
         if validate_flag == "pass":
 
@@ -82,4 +83,3 @@ def logout(user_id):
     except Exception as e:
         print(e)
         return make_response("Some thing went wrong on the server", 500)
-
