@@ -4,7 +4,15 @@
 [![Coverage Status](https://coveralls.io/repos/github/marthamareal/RideMyWayApi-DataBase/badge.svg?branch=feature)](https://coveralls.io/github/marthamareal/RideMyWayApi-DataBase?branch=feature)
 [![Maintainability](https://api.codeclimate.com/v1/badges/5ce1725652eea508ea13/maintainability)](https://codeclimate.com/github/marthamareal/RideMyWayApi-DataBase/maintainability)
 
-### Installations
+## Set Up
+
+```
+
+clone the repository  https://github.com/marthamareal/RideMyWayApi-DataBase
+
+```
+
+# Installations
 
 create a virtual environment with (virtualenv yourEnv).
 
@@ -18,7 +26,10 @@ Install [Flask](http://flask.pocoo.org/docs/1.0/installation/)
 
 Install requirements (pip freeze > requirements.txt)
 
+
 ### Configurations
+
+```
 
 Create a .env file in your project
 
@@ -39,6 +50,8 @@ export SCHEMA_FILE='path to tables.sql file in the project'
 export DROP_SCHEMA_FILE='path to drop_tables.sql file in the project'
 
 export TEST_DB_NAME='your test database' for running tests
+
+```
 
 ### Endpoints in the API
 
