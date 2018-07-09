@@ -1,5 +1,5 @@
 import json
-
+from flasgger import swag_from
 from flask import Blueprint, jsonify, request, make_response
 from app.decorators import login_required
 from app.requests.model import Request
@@ -8,6 +8,7 @@ from app.validators import check_id
 blue_print_requests = Blueprint('blue_print_requests', __name__)
 
 
+@swag_from('/app/apidocs/create_request.yml')
 @blue_print_requests.route('/rides/requests/create/<int:ride_id>', methods=['POST'])
 @login_required
 def create_request(user_id, ride_id):

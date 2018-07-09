@@ -1,3 +1,4 @@
+from app.notifications.model import Notification
 from app.requests import check_request
 from app.rides import check_ride
 from app.user import check_user
@@ -37,27 +38,29 @@ class Request:
             try:
                 with DatabaseManager() as cursor:
                     if check_ride(self.ride_id):
-                        cursor.execute(sql, (self.ride_id, self.user_id, self.status))
+                        cursor.execute(
+                            sql, (self.ride_id, self.user_id, self.status))
+
                         if cursor.fetchone():
                             return {
-                                       "message": "request made successfully",
-                                       "code": 201
-                                   }
+                                "message": "request made successfully",
+                                "code": 201
+                            }
                         return {
                             "Message": "Failed to make request"
                         }
 
                     return {
-                               "message": "Ride not found",
-                               "code": 400
-                           }
+                        "message": "Ride not found",
+                        "code": 400
+                    }
             except Exception as e:
                 return e
         else:
             return {
-                       "message": "You are not registered, Register to request ride",
-                       "code": 401
-                    }
+                "message": "You are not registered, Register to request ride",
+                "code": 401
+            }
 
     @staticmethod
     def get_ride_requests(ride_id, user_id):
@@ -110,7 +113,8 @@ class Request:
 
                         if cursor.fetchone():
                             update_sql = "UPDATE requests SET status = '%s' " % status
-                            print(status)
+                            notification = Notification(user_id, request_id, status)
+                            Notification.create_notification(notification)
                             cursor.execute(update_sql)
                             return {"Message": "Approval action was successful"}
                         return {"Message": "Access Denied"}
@@ -120,4 +124,3 @@ class Request:
             return {"Message": "Request not found"}
 
         return {"message": "You are not registered, Register to request ride"}
-

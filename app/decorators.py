@@ -28,5 +28,3 @@ def login_required(decorated_function):
             return make_response({"error": "invalid token"}, 400)
 
     return wrapper_func
-
-

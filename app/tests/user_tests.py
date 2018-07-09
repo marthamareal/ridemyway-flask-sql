@@ -20,14 +20,17 @@ class UserTests(unittest.TestCase):
 
     def test_create_user(self):
         data = json.dumps(self.user)
-        response = self.test_client.post('/auth/signup', data=data, headers=self.json_headers)
+        response = self.test_client.post(
+            '/auth/signup', data=data, headers=self.json_headers)
         self.assertEqual(response.status_code, 201)
 
     def test_user_login(self):
         data = json.dumps(self.user)
-        self.test_client.post('/auth/signup', data=data, headers=self.json_headers)
+        self.test_client.post('/auth/signup', data=data,
+                              headers=self.json_headers)
         data = json.dumps(self.user_logedin)
-        response = self.test_client.post('/auth/login', data=data, headers=self.json_headers)
+        response = self.test_client.post(
+            '/auth/login', data=data, headers=self.json_headers)
         results = json.loads(response.data.decode())
         # self.assertEqual(results.get("message"), 'You are logged in')
         self.assertEqual(response.status_code, 201)
@@ -39,7 +42,3 @@ class UserTests(unittest.TestCase):
                 with open(drop_tables_file, 'r')as file:
                     sql = file.read()
                     cursor.execute(sql)
-
-
-
-

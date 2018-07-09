@@ -1,4 +1,5 @@
 import json
+from flasgger import swag_from
 
 from flask import jsonify, Blueprint, request, make_response
 from app.decorators import login_required
@@ -8,6 +9,7 @@ from app.validators import ValidateUserEntries, check_id
 blue_print_rides = Blueprint('blue_print_rides', __name__)
 
 
+@swag_from('/app/apidocs/create_ride.yml')
 @blue_print_rides.route('/rides/create', methods=['POST'])
 @login_required
 def create_ride(user_id):
@@ -27,7 +29,8 @@ def create_ride(user_id):
         source = args.get("source")
         destination = args.get("destination")
 
-        validate_flag = ValidateUserEntries.create_ride(source, destination, date, user_id, time)
+        validate_flag = ValidateUserEntries.create_ride(
+            source, destination, date, user_id, time)
         if validate_flag == "pass":
 
             ride_instance = Ride(date, time, source, destination, user_id)
@@ -41,6 +44,7 @@ def create_ride(user_id):
         return make_response("Some thing went wrong on the server", 500)
 
 
+@swag_from('/app/apidocs/get_ride.yml')
 @blue_print_rides.route('/rides/<int:ride_id>', methods=['GET'])
 @login_required
 def show_ride(user_id, ride_id):
@@ -54,6 +58,7 @@ def show_ride(user_id, ride_id):
         return make_response("Some thing went wrong on the server", 500)
 
 
+@swag_from('/app/apidocs/get_rides.yml')
 @blue_print_rides.route('/rides', methods=['GET'])
 @login_required
 def get_all_rides(user_id):
@@ -76,11 +81,13 @@ def update_ride_offer(user_id, ride_id):
         source = args.get("source")
         destination = args.get("destination")
         if check_id(ride_id):
-            validate_flag = ValidateUserEntries.create_ride(source, destination, date, ride_id, time)
+            validate_flag = ValidateUserEntries.create_ride(
+                source, destination, date, ride_id, time)
 
             if validate_flag == "pass":
 
-                results = Ride.update(ride_id, user_id, source, destination, date, time)
+                results = Ride.update(user_id,
+                                      ride_id, source, destination, date, time)
 
                 return make_response(jsonify(results), 201)
 
@@ -92,6 +99,7 @@ def update_ride_offer(user_id, ride_id):
         return make_response("Some thing went wrong on the server", 500)
 
 
+@swag_from('/app/apidocs/delete_ride.yml')
 @blue_print_rides.route('/rides/delete/<int:ride_id>', methods=['DELETE'])
 @login_required
 def delete_one_ride(user_id, ride_id):

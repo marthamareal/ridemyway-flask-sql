@@ -66,22 +66,30 @@ class ValidateUserEntries:
     def signup(f_name, l_name, email, city, phone_no, password):
 
         if not check_name(f_name):
-            return {"error": "first name must have at least 3 characters and no numbers and spaces in it"}
+            return {"error": "first name must have at least 3 "
+                             "characters and no numbers and spaces in it"}
 
         if not check_name(l_name):
-            return {"error": "last name must have at least 3 characters and no numbers and spacesin it"}
+            return {"error": "last name must have at least 3 "
+                             "characters and no numbers and spacesin it"}
 
         if not check_name(city):
             return {"error": "city must have at least 3 characters"}
 
         if not re.match(phone_regex, phone_no):
-            return {"error": "Enter a valid phone number eg +256 77777788"}
+            return {
+                "error": "Enter a valid phone number eg +256 77777788"
+            }
 
         if not check_password(password):
-            return {"error": "password length must be 8 ore more"}
+            return {
+                "error": "password length must be 8 ore more"
+            }
 
         if not check_email(email):
-            return {"error": "Provide a valid email"}
+            return {
+                "error": "Provide a valid email"
+            }
 
         return "pass"
 
@@ -100,15 +108,19 @@ class ValidateUserEntries:
             return {"error": "Fill in a valid source avoid spaces, use , or -"}
 
         if not check_address(destination):
-            return {"error": "Fill in a valid destination avoid spaces, use , or -"}
+            return {"error": "Fill in a valid "
+                             "destination avoid spaces, use , or -"}
 
         if not check_id(creator_id):
             return {"error": "Id must be an integer"}
 
         if not check_time(time):
-            return {"error": "Input valid time attributes eg 10:30 AM"}
+            return {"error": "Input valid "
+                             "time attributes eg 10:30 AM"}
 
         if not check_date(date):
-            return {"error": "Input a valid date format(dd/mm/yyyy) eg 26/07/2018"}
+            return {
+                "error": "Input a valid date format(dd/mm/yyyy) eg 26/07/2018"
+            }
 
         return "pass"
