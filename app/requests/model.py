@@ -1,3 +1,4 @@
+from app.notifications.model import Notification
 from app.requests import check_request
 from app.rides import check_ride
 from app.user import check_user
@@ -39,6 +40,7 @@ class Request:
                     if check_ride(self.ride_id):
                         cursor.execute(
                             sql, (self.ride_id, self.user_id, self.status))
+
                         if cursor.fetchone():
                             return {
                                 "message": "request made successfully",
@@ -111,7 +113,8 @@ class Request:
 
                         if cursor.fetchone():
                             update_sql = "UPDATE requests SET status = '%s' " % status
-                            print(status)
+                            notification = Notification(user_id, request_id, status)
+                            Notification.create_notification(notification)
                             cursor.execute(update_sql)
                             return {"Message": "Approval action was successful"}
                         return {"Message": "Access Denied"}
