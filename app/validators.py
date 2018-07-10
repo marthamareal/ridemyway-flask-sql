@@ -8,6 +8,7 @@ phone_regex = "^\+[0-9]{3}\s[0-9]{9,15}$"
 id_regex = "^[1-9]+[0-9]*$"
 time_regex = "^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s(AM|PM)$"
 date_regex = "^(0[1-9]{1}|1[0-9]{1})/(0[1-9]{1}|1[0-9]{1}|2[0-9]{1}|3[0|1])/[0-9]{4}$"
+approval_regex = "[y|n|Y|N]{1}$"
 
 
 def check_email(email):
@@ -58,6 +59,15 @@ def check_date(date):
         return False
     else:
         return True
+
+
+def check_approval(approval):
+    if not re.match(approval_regex, approval):
+        print("error in aproval")
+        return "error"
+    else:
+        print("pass in aproval")
+        return "pass"
 
 
 class ValidateUserEntries:

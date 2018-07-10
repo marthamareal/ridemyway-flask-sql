@@ -1,3 +1,5 @@
+import logging
+
 from app.notifications.model import Notification
 from app.requests import check_request
 from app.rides import check_ride
@@ -93,7 +95,7 @@ class Request:
                         "Message": "Ride not Found"
                     }
             except Exception as e:
-                return e
+                logging.error(e)
 
         return {
             "message": "You are not registered, Register to request ride"
@@ -103,24 +105,48 @@ class Request:
     def approve_request(request_id, user_id, status):
 
         if check_user(user_id):
-            if check_request(request_id):
 
-                # This sql determines whether the user to approve request is owner of ride offer
-                sql = "SELECT creator_id FROM rides WHERE id=(SELECT ride_id FROM requests WHERE id= %s)"
+            if check_request(request_id):
                 try:
                     with DatabaseManager() as cursor:
-                        cursor.execute(sql, [request_id])
 
-                        if cursor.fetchone():
-                            update_sql = "UPDATE requests SET status = '%s' " % status
-                            notification = Notification(user_id, request_id, status)
+                        cursor.execute(
+                            "SELECT ride_id FROM requests WHERE id = '%s'" % request_id)
+                        ride_id = cursor.fetchone()
+                        # This sql determines whether the user to approve request is owner of ride offer
+                        sql = """SELECT creator_id, ref_no FROM rides WHERE 
+                                              id = %s AND creator_id = %s"""
+                        cursor.execute(sql, (ride_id, user_id))
+                        results = cursor.fetchone()
+
+                        if results:
+                            creator_id = str(results[0])
+                            ride_ref_no = results[1]
+
+                            cursor.execute(
+                                "SELECT l_name FROM users WHERE id = %s", creator_id)
+                            driver = cursor.fetchone()
+                            update_sql = "UPDATE requests SET status = '%s' WHERE id = '%s'" % (
+                                status.title(), request_id)
+
+                            if status.title() == "Y":
+                                message = "%s Accepted you to join ride %s" % (
+                                    driver[0], ride_ref_no)
+                            else:
+                                message = "%s Rejected you to join ride %s" % (
+                                    driver[0], ride_ref_no)
+
+                            notification = Notification(
+                                user_id, request_id, message)
                             Notification.create_notification(notification)
                             cursor.execute(update_sql)
                             return {"Message": "Approval action was successful"}
-                        return {"Message": "Access Denied"}
+                        else:
+                            return {"Message": "Access Denied"}
+
                 except Exception as e:
-                    return e
-
-            return {"Message": "Request not found"}
-
-        return {"message": "You are not registered, Register to request ride"}
+                    logging.error(e)
+            else:
+                return {"Message": "Request not found"}
+        else:
+            return {"message": "You are not registered, Register to request ride"}
