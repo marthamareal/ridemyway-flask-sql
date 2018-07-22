@@ -1,4 +1,6 @@
 import json
+import logging
+
 from flask import Blueprint, jsonify, request, make_response
 from app.decorators import login_required
 from app.validators import ValidateUserEntries
@@ -34,18 +36,22 @@ def signup():
 
         validate_flag = ValidateUserEntries.signup(
             first_name, last_name, email, city, phone_no, password)
-
+        print(validate_flag)
         if validate_flag == "pass":
 
             user = User(first_name, last_name, email, city, phone_no, password)
             created_user = User.create_user(user)
-            return make_response(jsonify({"user": created_user}), 201)
+            print(created_user)
+            if created_user.get("code"):
+                return make_response(jsonify({"user": created_user}), 400)
+            else:
+                return make_response(jsonify({"user": created_user}), 201)
         else:
-            return make_response(validate_flag, 400)
+            return make_response(jsonify(validate_flag), 400)
 
     except Exception as e:
-        print(e)
-        return make_response("Some thing went wrong on the server", 500)
+        logging.error("Something wrong happened: ", e)
+        return make_response(jsonify({"Message": "Some thing went wrong on the server"}), 500)
 
 
 @blue_print_user.route('/auth/login', methods=['POST'])
@@ -65,12 +71,16 @@ def login():
 
         if validate_flag == "pass":
             _login = User.login_user(email, password)
-            return make_response(jsonify({"user": _login}), 201)
+
+            if _login.get("code"):
+                return make_response(jsonify({"error": _login}), 400)
+            else:
+                return make_response(jsonify({"user": _login}), 201)
         else:
 
             return make_response(jsonify(validate_flag), 400)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return make_response("Some thing went wrong on the server", 500)
 
 
