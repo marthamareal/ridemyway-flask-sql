@@ -1,5 +1,7 @@
 import re
 
+form_errors = []
+
 name_regex = "^[a-zA-Z]{3,25}$"
 address_regex = "^[a-zA-Z0-9,-s]{3,45}$"
 email_regex = "^[a-zA-Z0-9]+@[a-z]+\.[a-z]{2,4}$"
@@ -63,10 +65,8 @@ def check_date(date):
 
 def check_approval(approval):
     if not re.match(approval_regex, approval):
-        print("error in aproval")
         return "error"
     else:
-        print("pass in aproval")
         return "pass"
 
 
@@ -76,32 +76,28 @@ class ValidateUserEntries:
     def signup(f_name, l_name, email, city, phone_no, password):
 
         if not check_name(f_name):
-            return {"error": "first name must have at least 3 "
-                             "characters and no numbers and spaces in it"}
+            form_errors.append("first name must have at least 3 "
+                               "characters and no numbers and spaces in it")
 
         if not check_name(l_name):
-            return {"error": "last name must have at least 3 "
-                             "characters and no numbers and spacesin it"}
+            form_errors.append("last name must have at least 3 "
+                               "characters and no numbers and spacesin it")
 
         if not check_name(city):
-            return {"error": "city must have at least 3 characters"}
+            form_errors.append("city must have at least 3 characters")
 
         if not re.match(phone_regex, phone_no):
-            return {
-                "error": "Enter a valid phone number eg +256 77777788"
-            }
+            form_errors.append("Enter a valid phone number eg +256 777777886")
 
         if not check_password(password):
-            return {
-                "error": "password length must be 8 ore more"
-            }
+            form_errors.append("password length must be 8 ore more")
 
         if not check_email(email):
-            return {
-                "error": "Provide a valid email"
-            }
-
-        return "pass"
+            form_errors.append("Provide a valid email")
+        if form_errors:
+            return form_errors
+        else:
+            return "pass"
 
     @staticmethod
     def login(email, password):
@@ -109,28 +105,28 @@ class ValidateUserEntries:
         if check_email(email) and check_password(password):
             return "pass"
         else:
-            return {"error": "Email and password don't match"}
+            return {"message": "Email and password don't match"}
 
     @staticmethod
     def create_ride(source, destination, date, creator_id, time):
 
         if not check_address(source):
-            return {"error": "Fill in a valid source avoid spaces, use , or -"}
+            return {"message": "Fill in a valid source avoid spaces, use , or -"}
 
         if not check_address(destination):
-            return {"error": "Fill in a valid "
-                             "destination avoid spaces, use , or -"}
+            return {"message": "Fill in a valid "
+                    "destination avoid spaces, use , or -"}
 
         if not check_id(creator_id):
-            return {"error": "Id must be an integer"}
+            return {"message": "Id must be an integer"}
 
         if not check_time(time):
-            return {"error": "Input valid "
-                             "time attributes eg 10:30 AM"}
+            return {"message": "Input valid "
+                    "time attributes eg 10:30 AM"}
 
         if not check_date(date):
             return {
-                "error": "Input a valid date format(dd/mm/yyyy) eg 26/07/2018"
+                "message": "Input a valid date format(dd/mm/yyyy) eg 26/07/2018"
             }
 
         return "pass"

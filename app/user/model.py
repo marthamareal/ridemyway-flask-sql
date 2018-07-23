@@ -65,7 +65,7 @@ class User:
                 else:
                     return {
                         "message": "Email and password don't match",
-                        "code": 400}
+                        "code": 401}
         except Exception as e:
             return e
 
@@ -78,7 +78,7 @@ class User:
                 cursor.execute(logged_out, [user_id])
                 results = cursor.fetchone()
                 if results:
-                    return {"Message": "You are logged out successfully"}
+                    return {"message": "You are logged out successfully"}
         except Exception as e:
             return e
 
