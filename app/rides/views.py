@@ -86,8 +86,8 @@ def update_ride_offer(user_id, ride_id):
 
             if validate_flag == "pass":
 
-                results = Ride.update(
-                    ride_id, user_id, source, destination, date, time)
+                results = Ride.update(user_id,
+                                      ride_id, source, destination, date, time)
 
                 return make_response(jsonify(results), 201)
 

@@ -125,7 +125,7 @@ class Ride:
         return {"Message": "Login (create account) to view the offers"}
 
     @staticmethod
-    def update(ride_id, user_id, source, destination, date, time,):
+    def update(user_id, ride_id, source, destination, date, time,):
 
         if check_user_ride(ride_id, user_id) == "Not Found":
             return {"ride": "ride not found"}
