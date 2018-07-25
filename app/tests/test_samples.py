@@ -48,7 +48,7 @@ class TestSamples:
     @staticmethod
     def sample_approve():
         return {
-            "approval": "Yes"
+            "approval": "Y"
         }
 
     @staticmethod

@@ -30,7 +30,7 @@ class User:
                 results = cursor.fetchone()
 
                 if results:
-                    return "Email already registered"
+                    return {"message": "Email already registered", "code": 400}
 
                 else:
                     cursor.execute(sql, (self.f_name, self.l_name, self.email,
@@ -63,7 +63,9 @@ class User:
                     cursor.execute(logged_in, (email, hash_password(password)))
                     return {"message": "You are logged in", "token": token}
                 else:
-                    return {"message": "Email and password don't match"}
+                    return {
+                        "message": "Email and password don't match",
+                        "code": 401}
         except Exception as e:
             return e
 
@@ -76,7 +78,7 @@ class User:
                 cursor.execute(logged_out, [user_id])
                 results = cursor.fetchone()
                 if results:
-                    return {"Message": "You are logged out successfully"}
+                    return {"message": "You are logged out successfully"}
         except Exception as e:
             return e
 

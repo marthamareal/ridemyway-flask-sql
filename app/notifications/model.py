@@ -1,3 +1,5 @@
+import logging
+
 from app import DatabaseManager
 
 
@@ -33,7 +35,7 @@ class Notification:
                                     results[2], results[3])
                 return "Failed to create notification"
         except Exception as e:
-            print(e)
+            logging.error(e)
 
     @staticmethod
     def get_notifications():
@@ -46,7 +48,6 @@ class Notification:
                 if results:
                     print(results)
                     for notification in results:
-                        print(notification)
                         notifications.append(
                             not_json(notification[0], notification[1],
                                      notification[2], notification[3]))
@@ -54,5 +55,5 @@ class Notification:
                     return {"notifications": notifications}
                 return "no results"
         except Exception as e:
-            print(e)
+            logging.error(e)
 
