@@ -33,7 +33,7 @@ class UserTests(unittest.TestCase):
             '/auth/login', data=data, headers=self.json_headers)
         results = json.loads(response.data.decode())
         # self.assertEqual(results.get("message"), 'You are logged in')
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
     def tearDown(self):
         with app.app_context():

@@ -39,8 +39,8 @@ def signup():
 
                 user = User(first_name, last_name, email, city, phone_no, password)
                 created_user = User.create_user(user)
-                if created_user.get("code"):
-                    return make_response(jsonify({"message": created_user.get("message")}), 400)
+                if created_user.get("message"):
+                    return make_response(jsonify(created_user), 400)
                 else:
                     return make_response(jsonify({"message": created_user}), 201)
             else:
@@ -58,26 +58,29 @@ def login():
     try:
         args = json.loads(request.data.decode())
 
-        if not args.get("email"):
-            return make_response(jsonify({"message": "Field 'email' is required"}), 400)
-        if not args.get("password"):
-            return make_response(jsonify({"message": "Field 'password' is required"}), 400)
+        check_form_fields(args, "email")
+        check_form_fields(args, "password")
 
-        email = args.get("email")
-        password = args.get("password")
-
-        validate_flag = ValidateUserEntries.login(email, password)
-
-        if validate_flag == "pass":
-            _login = User.login_user(email, password)
-
-            if _login.get("code"):
-                return make_response(jsonify({"message": _login}), 401)
-            else:
-                return make_response(jsonify({"message": _login}), 201)
+        if missing_form_fields:
+            message = "Fields %s are required" % missing_form_fields
+            missing_form_fields.clear()
+            return make_response(jsonify({"message": message}), 400)
         else:
-            print(validate_flag)
-            return make_response(jsonify(validate_flag), 400)
+
+            email = args.get("email")
+            password = args.get("password")
+
+            validate_flag = ValidateUserEntries.login(email, password)
+
+            if validate_flag == "pass":
+                _login = User.login_user(email, password)
+
+                if _login.get("token"):
+                    return make_response(jsonify(_login), 200)
+                else:
+                    return make_response(jsonify(_login), 400)
+            else:
+                return make_response(jsonify(validate_flag), 400)
     except Exception as e:
         logging.error(e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)

@@ -27,8 +27,7 @@ class RideTests(unittest.TestCase):
         login_data = json.dumps(self.sample_login)
         login_response = self.test_client.post(
             '/auth/login', data=login_data, headers=self.json_headers)
-        self.token = json.loads(login_response.data.decode())[
-            'message'].get('token')
+        self.token = json.loads(login_response.data.decode())['token']
         self.login_headers = {'token': self.token,
                               'content_type': 'application/json'}
 

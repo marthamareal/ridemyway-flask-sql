@@ -105,7 +105,7 @@ class ValidateUserEntries:
         if check_email(email) and check_password(password):
             return "pass"
         else:
-            return {"message": "Email and password don't match"}
+            return {"message": "Provide a correct email address and password", "status": 400}
 
     @staticmethod
     def create_ride(source, destination, date, creator_id, time):
