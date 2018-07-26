@@ -72,7 +72,6 @@ class User:
     def logout(user_id):
         try:
             with DatabaseManager() as cursor:
-                print(user_id)
                 logged_out = "update users set logged_in = FALSE where id = %s returning id"
                 cursor.execute(logged_out, [user_id])
                 results = cursor.fetchone()

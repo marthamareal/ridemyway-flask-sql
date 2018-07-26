@@ -86,7 +86,7 @@ def login():
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 
-@blue_print_user.route('/auth/logout', methods=['POST'])
+@blue_print_user.route('/auth/logout', methods=['GET'])
 @login_required
 def logout(user_id):
     try:
