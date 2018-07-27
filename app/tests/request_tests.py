@@ -59,9 +59,6 @@ class RideTests(unittest.TestCase):
         data = json.dumps(self.sample_approval)
         response = self.test_client.post(
             '/rides/requests/approve/1', data=data, headers=self.login_headers)
-        results = json.loads(response.data.decode())
-        self.assertEqual(
-            results, {'Message': 'Approval action was successful'})
         self.assertEqual(response.status_code, 201)
 
     def test_ride_not_found(self):

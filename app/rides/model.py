@@ -2,7 +2,7 @@ from app.user import check_user
 from app.db_manager import DatabaseManager
 
 
-def ride_json(_id, ref_no, source, destination, date, creator_id, time, requests_no):
+def ride_json(_id, ref_no, source, destination, date, creator_id, time, requests_no, price):
     """
             This method receives an object of the class, creates and returns a ride
     """
@@ -14,7 +14,8 @@ def ride_json(_id, ref_no, source, destination, date, creator_id, time, requests
         "source": source,
         "destination": destination,
         "creator_id": creator_id,
-        "requests_no": requests_no
+        "requests_no": requests_no,
+        "price": price
     }
     return ride
 
@@ -39,7 +40,7 @@ def check_user_ride(ride_id, user_id):
 
 class Ride:
 
-    def __init__(self, date, time, source, destination, creator_id):
+    def __init__(self, date, time, source, destination, creator_id, price):
         """
                 This method acts as a constructor for our class, its used to initialise class attributes
         """
@@ -51,25 +52,27 @@ class Ride:
         self.creator_id = creator_id
         self.destination = destination
         self.requests_no = 0
+        self.price = price
 
     def create_ride(self):
 
-        sql = "INSERT INTO rides (ref_no, source, destination, date, creator_id, time, requests_no)" \
-              " VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id"
+        sql = "INSERT INTO rides (ref_no, source, destination, date, creator_id, time, requests_no, price)" \
+              " VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id"
 
         with DatabaseManager() as cursor:
 
             if check_user(self.creator_id):
                 try:
                     cursor.execute(sql, (self.ref_no, self.source, self.destination, self.date,
-                                         self.creator_id, self.time, self.requests_no))
+                                         self.creator_id, self.time, self.requests_no, self.price))
 
                     cursor.execute(
                         "SELECT * FROM rides WHERE ref_no = '%s'" % self.ref_no)
                     result_ride = cursor.fetchone()
 
                     return ride_json(result_ride[0], result_ride[1], result_ride[2],
-                                     result_ride[3], result_ride[4], result_ride[5], result_ride[6], result_ride[7])
+                                     result_ride[3], result_ride[4], result_ride[5],
+                                     result_ride[6], result_ride[7], result_ride[8])
                 except Exception as e:
                     return e
             else:
@@ -88,16 +91,30 @@ class Ride:
             with DatabaseManager() as cursor:
                 try:
                     cursor.execute(
-                        "SELECT * FROM rides WHERE id = %s", [ride_id])
+                        """SELECT date, ref_no, source, destination,time, 
+                                  concat(l_name,' ',f_name)  as creator,
+                                  phone_no as phone,
+                                  price
+                          FROM rides
+                           INNER JOIN users ON rides.creator_id = users.id
+                           WHERE rides.id = %s""", [ride_id])
                     ride = cursor.fetchone()
                     if ride:
-                        return ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7])
+                        return {"date": ride[0],
+                                "ref_no": ride[1],
+                                "source": ride[2],
+                                "destination": ride[3],
+                                "time": ride[4],
+                                "creator": ride[5],
+                                "phone": ride[6],
+                                "price": ride[7]
+                                }
 
-                    return {"Message": "Requested ride is not found"}
+                    return {"message": "Requested ride is not found"}
                 except Exception as e:
                     return e
 
-        return {"Message": "Login (create account) to view the offers"}
+        return {"message": "Login (create account) to view the offers"}
 
     @staticmethod
     def get_rides(user_id):
@@ -110,12 +127,13 @@ class Ride:
 
             with DatabaseManager() as cursor:
                 try:
-                    cursor.execute("SELECT * FROM rides")
+                    cursor.execute("SELECT id, ref_no, source, destination, date, "
+                                   "creator_id, time, requests_no, price FROM rides")
                     rides = cursor.fetchall()
                     if rides:
                         for ride in rides:
                             all_rides.append(
-                                ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7]))
+                                ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7], ride[8]))
 
                         return {"Ride offers": all_rides}
                     return {"Message": "No ride Found"}
@@ -125,7 +143,7 @@ class Ride:
         return {"Message": "Login (create account) to view the offers"}
 
     @staticmethod
-    def update(user_id, ride_id, source, destination, date, time,):
+    def update(user_id, ride_id, source, destination, date, time, price):
 
         if check_user_ride(ride_id, user_id) == "Not Found":
             return {"ride": "ride not found"}
@@ -135,16 +153,16 @@ class Ride:
 
                 with DatabaseManager() as cursor:
                     try:
-                        update = """UPDATE rides SET source = %s, destination = %s, date = %s, time = %s
+                        update = """UPDATE rides SET source = %s, destination = %s, date = %s, time = %s , price = %s
                                                                        WHERE id = %s  RETURNING *
                                                      """
                         cursor.execute(
-                            update, (source, destination, date, time, ride_id))
+                            update, (source, destination, date, time, ride_id, price))
                         ride = cursor.fetchone()
 
                         if ride:
                             return {"updated ride": ride_json(ride[0], ride[1], ride[2], ride[3],
-                                                              ride[4], ride[5], ride[6], ride[7])}
+                                                              ride[4], ride[5], ride[6], ride[7], ride[8])}
                     except Exception as e:
                         return e
 

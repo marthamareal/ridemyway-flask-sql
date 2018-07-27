@@ -11,10 +11,18 @@ id_regex = "^[1-9]+[0-9]*$"
 time_regex = "^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s(AM|PM)$"
 date_regex = "^(0[1-9]{1}|1[0-9]{1})/(0[1-9]{1}|1[0-9]{1}|2[0-9]{1}|3[0|1])/[0-9]{4}$"
 approval_regex = "[y|n|Y|N]{1}$"
+price_regex = "^[0-9]{3,}$"
 
 
 def check_email(email):
     if not re.match(email_regex, email):
+        return False
+    else:
+        return True
+
+
+def check_price(price):
+    if not re.match(price_regex, str(price)):
         return False
     else:
         return True
@@ -108,7 +116,7 @@ class ValidateUserEntries:
             return {"message": "Provide a correct email address and password", "status": 400}
 
     @staticmethod
-    def create_ride(source, destination, date, creator_id, time):
+    def create_ride(source, destination, date, creator_id, time, price):
 
         if not check_address(source):
             return {"message": "Fill in a valid source avoid spaces, use , or -"}
@@ -127,6 +135,10 @@ class ValidateUserEntries:
         if not check_date(date):
             return {
                 "message": "Input a valid date format(dd/mm/yyyy) eg 26/07/2018"
+            }
+        if not check_price(price):
+            return {
+                "message": "Input a correct price eg 50,5000,10000....."
             }
 
         return "pass"

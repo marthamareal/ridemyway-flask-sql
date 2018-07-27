@@ -23,9 +23,10 @@ class TestSamples:
             "date": "02/03/2018",
             "time": "10:30 AM",
             "source": "Makerere",
-            "destination": "Towm",
+            "destination": "Town",
             "creator_id": 1,
-            "requests_no": '0'
+            "requests_no": '0',
+            "price": 5000
         }
 
         return ride
@@ -40,7 +41,8 @@ class TestSamples:
             "source": "new",
             "destination": "new",
             "creator_id": 1,
-            "requests_no": '0'
+            "requests_no": '0',
+            "price": 6000
         }
 
         return ride

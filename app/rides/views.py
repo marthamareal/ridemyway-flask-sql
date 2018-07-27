@@ -23,17 +23,20 @@ def create_ride(user_id):
             return make_response(jsonify({"message": "Field 'source' is required"}), 400)
         if not args.get("destination"):
             return make_response(jsonify({"message": "Field 'destination' is required"}), 400)
+        if not args.get("price"):
+            return make_response(jsonify({"message": "Field 'price' is required"}), 400)
 
         date = args.get("date")
         time = args.get("time")
         source = args.get("source")
         destination = args.get("destination")
+        price = args.get("price")
 
         validate_flag = ValidateUserEntries.create_ride(
-            source, destination, date, user_id, time)
+            source, destination, date, user_id, time, price)
         if validate_flag == "pass":
 
-            ride_instance = Ride(date, time, source, destination, user_id)
+            ride_instance = Ride(date, time, source, destination, user_id, price)
             created_ride = Ride.create_ride(ride_instance)
 
             return make_response(jsonify({"ride": created_ride}), 201)
@@ -51,7 +54,9 @@ def show_ride(user_id, ride_id):
     try:
         if check_id(ride_id):
             ride = Ride.get_ride(user_id, ride_id)
+
             return make_response(jsonify({"ride": ride}), 200)
+
         return make_response(jsonify({"error": "ride id must be integer"}), 400)
     except Exception as e:
         print(e)
@@ -80,14 +85,16 @@ def update_ride_offer(user_id, ride_id):
         time = args.get("time")
         source = args.get("source")
         destination = args.get("destination")
+        price = args.get("price")
+
         if check_id(ride_id):
             validate_flag = ValidateUserEntries.create_ride(
-                source, destination, date, ride_id, time)
+                source, destination, date, ride_id, time, price)
 
             if validate_flag == "pass":
 
                 results = Ride.update(user_id,
-                                      ride_id, source, destination, date, time)
+                                      ride_id, source, destination, date, time, price)
 
                 return make_response(jsonify(results), 201)
 
