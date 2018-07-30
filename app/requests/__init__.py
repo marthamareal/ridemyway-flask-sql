@@ -21,7 +21,7 @@ def not_approved(request_id):
         cursor.execute("SELECT status FROM requests WHERE  id = %s", [request_id])
         status = cursor.fetchone()
 
-        if status[0] != "Pending":
+        if status != "Pending":
             return "approved"
         else:
             return "not_approved"

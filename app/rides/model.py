@@ -206,3 +206,28 @@ class Ride:
                     return "RF001"
             except Exception as e:
                 return e
+
+    @staticmethod
+    def get_driver_offers(user_id):
+        driver_rides = []
+        try:
+            with DatabaseManager() as cursor:
+                cursor.execute("""SELECT rides.id as id, ref_no, source, destination, date, 
+                                   creator_id, time,
+                                    (SELECT count(id) FROM requests where ride_id = rides.id) as requests_no,
+                                     price
+                                      FROM rides
+                                       WHERE creator_id = %s
+                                       """, [user_id])
+                rides = cursor.fetchall()
+                if rides:
+                    for ride in rides:
+                        driver_rides.append(
+                            ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7], ride[8]))
+
+                    return {"driver_offers": driver_rides}
+
+                return {"message": "You have no rides created  create one to drive", "status": 400}
+
+        except Exception as e:
+            return {"message": e}

@@ -7,15 +7,16 @@ from app.user import check_user
 from app import DatabaseManager
 
 
-def request_json(request_id, ride_id, user_id, status):
+def request_json(request_id, ride_ref, requestor, status, date):
     """
           This method receives an object of the class, creates and returns a dictionary from the object
     """
     request = {
-        "id": request_id,
-        "requestor_id": user_id,
-        "ride_id": ride_id,
-        "status": status
+        "request_id": request_id,
+        "requestor": requestor,
+        "ride_ref": ride_ref,
+        "status": status,
+        "date": date
     }
     return request
 
@@ -69,7 +70,16 @@ class Request:
 
         all_requests_on_given_ride = []
 
-        sql = "SELECT * FROM requests WHERE ride_id = %s"
+        sql = """SELECT ride_id,
+                      ref_no as ride_ref, 
+                     concat(f_name,' ',l_name) as requestor,
+                     status,
+                     date
+                     FROM requests 
+                     INNER JOIN users u on requests.requestor_id = u.id
+                     INNER JOIN rides r on requests.ride_id = r.id
+                     WHERE ride_id = %s"""
+
         """
             Check if user exists
         """
@@ -83,22 +93,25 @@ class Request:
                         if results:
                             for result in results:
                                 all_requests_on_given_ride.append(request_json(result[0],
-                                                                               result[1], result[2], result[3]))
+                                                                  result[1], result[2], result[3], result[4]))
                             return {
-                                "Ride's requests": all_requests_on_given_ride
+                                "requests": all_requests_on_given_ride
                             }
                         return {
-                            "message": "Ride has no requests"
+                            "message": "Ride has no requests",
+                            "status": 400
                         }
 
                     return {
-                        "Message": "Ride not Found"
+                        "Message": "Ride not Found",
+                        "status": 400
                     }
             except Exception as e:
                 logging.error(e)
 
         return {
-            "message": "You are not registered, Register to request ride"
+            "message": "You are not registered, Register to request ride",
+            "status": 400
         }
 
     @staticmethod
@@ -114,6 +127,7 @@ class Request:
                             "SELECT ride_id FROM requests WHERE id = '%s'" % request_id)
                         ride_id = cursor.fetchone()
                         # This sql determines whether the user to approve request is owner of ride offer
+
                         sql = """SELECT creator_id, ref_no FROM rides WHERE 
                                               id = %s AND creator_id = %s"""
                         cursor.execute(sql, (ride_id, user_id))
@@ -140,9 +154,9 @@ class Request:
                                 user_id, request_id, message)
                             Notification.create_notification(notification)
                             cursor.execute(update_sql)
-                            return {"Message": "Approval action was successful"}
+                            return {"message": "Approval action was successful"}
                         else:
-                            return {"Message": "Access Denied"}
+                            return {"message": "Access Denied", "status": 401}
 
                 except Exception as e:
                     logging.error(e)

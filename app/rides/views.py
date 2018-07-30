@@ -1,4 +1,6 @@
 import json
+import logging
+
 from flasgger import swag_from
 
 from flask import jsonify, Blueprint, request, make_response
@@ -118,5 +120,20 @@ def delete_one_ride(user_id, ride_id):
 
         return make_response(jsonify({"error": "ride id must be integer"}), 400)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return make_response("Some thing went wrong on the server", 500)
+
+
+@swag_from('/app/apidocs/get_rides.yml')
+@blue_print_rides.route('/driver/rides', methods=['GET'])
+@login_required
+def get_driver_rides(user_id):
+    try:
+        rides = Ride.get_driver_offers(user_id)
+        if rides.get("status"):
+            return make_response(jsonify(rides), 400)
+
+        return make_response(jsonify(rides), 200)
+    except Exception as e:
+        logging.error(e)
+        return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)

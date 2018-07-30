@@ -32,12 +32,16 @@ def get_requests(user_id, ride_id):
     try:
         if check_id(ride_id):
             requests = Request.get_ride_requests(ride_id, user_id)
-            results = jsonify(requests)
-            return make_response(results, 200)
-        return make_response({"error": "ride id must be integer"}, 400)
+
+            if requests.get("status"):
+                return make_response(jsonify(requests), 400)
+            else:
+                return make_response(jsonify(requests), 200)
+
+        return make_response(jsonify({"message": "ride id must be integer"}), 400)
     except Exception as e:
         logging.error(e)
-        return make_response("Some thing went wrong on the server", 500)
+        return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 
 @blue_print_requests.route('/rides/requests/approve/<int:request_id>', methods=['POST', 'PUT'])
@@ -47,8 +51,10 @@ def approve_ride_request(user_id, request_id):
         if not_approved(request_id) is "not_approved":
             if check_id(request_id):
                 inputs = json.loads(request.data.decode())
+
                 if not inputs.get("approval"):
                     return make_response(jsonify({"message": "Field 'approval' is required"}), 400)
+
                 approval = inputs.get("approval")
 
                 if check_approval(approval) is "error":
@@ -56,10 +62,16 @@ def approve_ride_request(user_id, request_id):
 
                 results = Request.approve_request(
                     request_id, user_id, approval)
+
+                if results.get("status"):
+                    return make_response(jsonify(results), 401)
+
                 return make_response(jsonify(results), 201)
-            return make_response({"error": "request id must be integer"}, 400)
+
+            return make_response(jsonify({"message": "request id must be integer"}), 400)
         else:
-            return make_response(jsonify({"Message": "Request is already approved"}), 400)
+            return make_response(jsonify({"message": "Request is already approved"}), 400)
+
     except Exception as e:
         logging.error(e)
-        return make_response("Some thing went wrong on the server", 500)
+        return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
