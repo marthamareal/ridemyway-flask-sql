@@ -1,7 +1,7 @@
 import logging
 
 from app.notifications.model import Notification
-from app.requests import check_request
+from app.requests import check_request, check_request_user_ride
 from app.rides import check_ride
 from app.user import check_user
 from app import DatabaseManager
@@ -41,21 +41,30 @@ class Request:
             try:
                 with DatabaseManager() as cursor:
                     if check_ride(self.ride_id):
-                        cursor.execute(
-                            sql, (self.ride_id, self.user_id, self.status))
+                        if check_request_user_ride(self.user_id, self.ride_id):
 
-                        if cursor.fetchone():
+                            cursor.execute(
+                                sql, (self.ride_id, self.user_id, self.status))
+
+                            if cursor.fetchone():
+                                return {
+                                    "message": "request made successfully",
+                                }
+
                             return {
-                                "message": "request made successfully",
-                                "code": 201
+                                "message": "Failed to make request",
+                                "status": 400
                             }
-                        return {
-                            "Message": "Failed to make request"
-                        }
+
+                        else:
+                            return {
+                                "message": "You already Requested this Ride",
+                                "status": 400
+                            }
 
                     return {
                         "message": "Ride not found",
-                        "code": 400
+                        "status": 400
                     }
             except Exception as e:
                 return e
@@ -70,7 +79,7 @@ class Request:
 
         all_requests_on_given_ride = []
 
-        sql = """SELECT ride_id,
+        sql = """SELECT requests.id,
                       ref_no as ride_ref, 
                      concat(f_name,' ',l_name) as requestor,
                      status,
@@ -103,7 +112,7 @@ class Request:
                         }
 
                     return {
-                        "Message": "Ride not Found",
+                        "message": "Ride not Found",
                         "status": 400
                     }
             except Exception as e:
@@ -161,6 +170,6 @@ class Request:
                 except Exception as e:
                     logging.error(e)
             else:
-                return {"Message": "Request not found"}
+                return {"message": "Request not found"}
         else:
             return {"message": "You are not registered, Register to request ride"}

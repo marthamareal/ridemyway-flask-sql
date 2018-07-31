@@ -37,7 +37,7 @@ def index():
 
 @app.route('/<path:path>', methods=['POST', 'GET', 'PUT', 'DELETE'])
 def url_not_found(path):
-    return make_response(jsonify({"Message": "Requested url is not found"}), 404)
+    return make_response(jsonify({"message": "Requested url is not found"}), 404)
 
 
 

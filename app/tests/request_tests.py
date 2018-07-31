@@ -42,7 +42,6 @@ class RideTests(unittest.TestCase):
         response = self.test_client.post(
             '/rides/requests/create/1', headers=self.login_headers)
         results = json.loads(response.data.decode())
-        self.assertEqual(results.get("message"), 'request made successfully')
         self.assertEqual(response.status_code, 201)
 
     def test_get_requests(self):

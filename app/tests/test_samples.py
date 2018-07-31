@@ -20,7 +20,7 @@ class TestSamples:
         ride = {
             "id": 1,
             "ref_no": "RF001",
-            "date": "02/03/2018",
+            "date": "2018-07-11",
             "time": "10:30 AM",
             "source": "Makerere",
             "destination": "Town",
@@ -36,7 +36,7 @@ class TestSamples:
         ride = {
             "id": 1,
             "ref_no": "RF001",
-            "date": "02/03/2017",
+            "date": "2018-07-11",
             "time": "10:30 PM",
             "source": "new",
             "destination": "new",

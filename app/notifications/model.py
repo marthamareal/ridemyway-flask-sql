@@ -3,11 +3,9 @@ import logging
 from app import DatabaseManager
 
 
-def not_json(_id, user_id, request_id, message):
+def not_json(_id, message):
     return {
         "id": _id,
-        "user_id": user_id,
-        "request_id": request_id,
         "message": message
     }
 
@@ -31,29 +29,26 @@ class Notification:
                 cursor.execute(sql, (self.user_id, self.request_id, self.message))
                 results = cursor.fetchone()
                 if results:
-                    return not_json(results[0], results[1],
-                                    results[2], results[3])
-                return "Failed to create notification"
+                    return {"message": "created notification"}
+                return {"message": "Failed to create notification"}
         except Exception as e:
             logging.error(e)
 
     @staticmethod
-    def get_notifications():
-        sql = "SELECT * FROM notifications"
+    def get_notifications(user_id):
+        sql = "SELECT  id, message FROM notifications WHERE user_id = '%s' " % user_id
         notifications = []
         try:
             with DatabaseManager() as cursor:
                 cursor.execute(sql)
                 results = cursor.fetchall()
                 if results:
-                    print(results)
                     for notification in results:
                         notifications.append(
-                            not_json(notification[0], notification[1],
-                                     notification[2], notification[3]))
-                        print(notifications)
+                            not_json(notification[0], notification[1]))
+
                     return {"notifications": notifications}
-                return "no results"
+                return {"message": "You have no notifications", "status": 400}
         except Exception as e:
             logging.error(e)
 

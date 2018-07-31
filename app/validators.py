@@ -9,7 +9,7 @@ password_regex = "^[a-z|A-Z|0-9|^\s|\s$@#$%^&!]+"
 phone_regex = "^\+[0-9]{3}\s[0-9]{9,15}$"
 id_regex = "^[1-9]+[0-9]*$"
 time_regex = "^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\s(AM|PM)$"
-date_regex = "^(0[1-9]{1}|1[0-9]{1})/(0[1-9]{1}|1[0-9]{1}|2[0-9]{1}|3[0|1])/[0-9]{4}$"
+date_regex = "^[0-9]{4}-[0[1-9]{1}|1[0-9]{1}|2[0-9]{1}|3[0|1]]-(0[1-9]{1}|1[0-9]{1})$"
 approval_regex = "[y|n|Y|N]{1}$"
 price_regex = "^[0-9]{3,}$"
 
@@ -134,7 +134,7 @@ class ValidateUserEntries:
 
         if not check_date(date):
             return {
-                "message": "Input a valid date format(dd/mm/yyyy) eg 26/07/2018"
+                "message": "Input a valid date format(yyyy-mm-dd) eg 2018-07-11"
             }
         if not check_price(price):
             return {

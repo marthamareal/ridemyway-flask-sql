@@ -19,7 +19,11 @@ def create_request(user_id, ride_id):
         if check_id(ride_id):
             instance = Request(user_id, ride_id, "pending".title())
             results = Request.create_request(instance)
-            return make_response(jsonify({"message": results.get('message')}), results.get('code'))
+
+            if results.get("status"):
+                return make_response(jsonify(results), 400)
+
+            return make_response(jsonify(results), 201)
         return make_response({"error": "ride id must be integer"}, 400)
     except Exception as e:
         logging.error(e)
