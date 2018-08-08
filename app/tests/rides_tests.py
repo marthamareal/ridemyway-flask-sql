@@ -8,6 +8,7 @@ from app.db_manager import DatabaseManager
 from app.user.model import hash_password
 from app.tests.test_samples import TestSamples
 from configs import drop_schema
+from . import create_login_user
 
 
 class RideTests(unittest.TestCase):
@@ -20,13 +21,7 @@ class RideTests(unittest.TestCase):
     def setUp(self):
         app.config['TESTING'] = True
         self.test_client = app.test_client()
-        # create a user
-        data = json.dumps(self.sample_user)
-        self.test_client.post('/auth/signup', data=data,
-                              headers=self.json_headers)
-        login_data = json.dumps(self.sample_login)
-        login_response = self.test_client.post(
-            '/auth/login', data=login_data, headers=self.json_headers)
+        login_response = create_login_user(self)
         self.token = json.loads(login_response.data.decode())['token']
         self.login_headers = {'token': self.token,
                               'content_type': 'application/json'}

@@ -49,7 +49,7 @@ def signup():
                 return make_response(jsonify({"message": message}), 400)
 
     except Exception as e:
-        logging.error("Something wrong happened: ", e)
+        # logging.error("Something wrong happened: ", e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 

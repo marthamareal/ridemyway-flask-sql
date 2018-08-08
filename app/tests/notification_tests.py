@@ -5,10 +5,10 @@ import json
 
 from configs import drop_schema
 from app import app
+from . import create_login_user
 from app.db_manager import DatabaseManager
 from app.user.model import hash_password
 from app.tests.test_samples import TestSamples
-from . import create_login_user
 
 
 class RideTests(unittest.TestCase):
@@ -23,7 +23,6 @@ class RideTests(unittest.TestCase):
         app.config['TESTING'] = True
         self.application = current_app
         self.test_client = app.test_client()
-        
         login_response = create_login_user(self)
         self.token = json.loads(login_response.data.decode())['token']
         self.login_headers = {'token': self.token,
@@ -32,36 +31,23 @@ class RideTests(unittest.TestCase):
         ride_data = json.dumps(self.sample_ride)
         self.test_client.post(
             '/rides/create', data=ride_data, headers=self.login_headers)
-
-    def test_create_request(self):
-        response = self.test_client.post(
+        # Request ride
+        self.test_client.post(
             '/rides/requests/create/1', headers=self.login_headers)
-        self.assertEqual(response.status_code, 201)
-
-    def test_get_requests(self):
-        self.test_client.post('/rides/requests/create/1',
-                              headers=self.login_headers)
-        response = self.test_client.get(
-            '/rides/requests/1', headers=self.login_headers)
-        self.assertEqual(response.status_code, 200)
-
-    def test_approve_ride_request(self):
-        self.test_client.post('/rides/requests/create/1',
-                              headers=self.login_headers)
+        # Approve Ride
         data = json.dumps(self.sample_approval)
-        response = self.test_client.post(
+        self.test_client.post(
             '/rides/requests/approve/1', data=data, headers=self.login_headers)
-        self.assertEqual(response.status_code, 201)
 
-    def test_ride_not_found(self):
-        response = self.test_client.post(
-            '/rides/requests/create/2', headers=self.login_headers)
-        self.assertEqual(response.status_code, 400)
+    def test_get_all_notifications(self):
+        response = self.test_client.get(
+            '/notifications', headers=self.login_headers)
+        print(response.data.decode())
+        self.assertEqual(response.status_code, 200)
 
     def tearDown(self):
         with app.app_context():
             with DatabaseManager() as cursor:
-                drop_tables_file = drop_schema
-                with open(drop_tables_file, 'r')as file:
+                with open(drop_schema, 'r')as file:
                     sql = file.read()
                     cursor.execute(sql)

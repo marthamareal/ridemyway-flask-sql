@@ -1,6 +1,7 @@
 import logging
 
 import psycopg2
+import os
 
 from configs import db_configs, test_db_configs
 from flask import current_app
@@ -18,7 +19,11 @@ class DatabaseManager:
 
     def __enter__(self):
         try:
-            self.connection = psycopg2.connect(**self.configs)
+            if 'DATABASE_URL' in os.environ:
+                self.connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode = 'require')
+            else:
+                self.connection = psycopg2.connect(**self.configs)
+
             self.cursor = self.connection.cursor()
 
             with open(self.tables_file, 'r') as file:
