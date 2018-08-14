@@ -24,10 +24,8 @@ class RideTests(unittest.TestCase):
         self.application = current_app
         self.test_client = app.test_client()
         
-        login_response = create_login_user(self)
-        self.token = json.loads(login_response.data.decode())['token']
-        self.login_headers = {'token': self.token,
-                              'content_type': 'application/json'}
+        self.login_headers = create_login_user(self)
+        
         # create ride
         ride_data = json.dumps(self.sample_ride)
         self.test_client.post(

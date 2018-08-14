@@ -23,10 +23,7 @@ class RideTests(unittest.TestCase):
         app.config['TESTING'] = True
         self.application = current_app
         self.test_client = app.test_client()
-        login_response = create_login_user(self)
-        self.token = json.loads(login_response.data.decode())['token']
-        self.login_headers = {'token': self.token,
-                              'content_type': 'application/json'}
+        self.login_headers = create_login_user(self)
         # create ride
         ride_data = json.dumps(self.sample_ride)
         self.test_client.post(
@@ -42,7 +39,6 @@ class RideTests(unittest.TestCase):
     def test_get_all_notifications(self):
         response = self.test_client.get(
             '/notifications', headers=self.login_headers)
-        print(response.data.decode())
         self.assertEqual(response.status_code, 200)
 
     def tearDown(self):

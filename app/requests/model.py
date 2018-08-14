@@ -162,6 +162,7 @@ class Request:
                             notification = Notification(
                                 user_id, request_id, message)
                             Notification.create_notification(notification)
+
                             cursor.execute(update_sql)
                             return {"message": "Approval action was successful"}
                         else:
