@@ -68,11 +68,9 @@ class Ride:
 
                     cursor.execute(
                         "SELECT * FROM rides WHERE ref_no = '%s'" % self.ref_no)
-                    result_ride = cursor.fetchone()
+                    result_ride = cursor.fetchall()
 
-                    return ride_json(result_ride[0], result_ride[1], result_ride[2],
-                                     result_ride[3], result_ride[4], result_ride[5],
-                                     result_ride[6], result_ride[7], result_ride[8])
+                    return rides_list(result_ride)
                 except Exception as e:
                     return e
             else:
@@ -131,9 +129,7 @@ class Ride:
                                    "creator_id, time, requests_no, price FROM rides")
                     rides = cursor.fetchall()
                     if rides:
-                        for ride in rides:
-                            all_rides.append(
-                                ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7], ride[8]))
+                        all_rides.append(rides_list(rides))
 
                         return {"Ride offers": all_rides}
                     return {"Message": "No ride Found"}
@@ -161,8 +157,7 @@ class Ride:
                         ride = cursor.fetchone()
 
                         if ride:
-                            return {"updated ride": ride_json(ride[0], ride[1], ride[2], ride[3],
-                                                              ride[4], ride[5], ride[6], ride[7], ride[8])}
+                            return {"updated ride": rides_list(ride)}
                     except Exception as e:
                         return e
 
@@ -221,9 +216,7 @@ class Ride:
                                        """, [user_id])
                 rides = cursor.fetchall()
                 if rides:
-                    for ride in rides:
-                        driver_rides.append(
-                            ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7], ride[8]))
+                    driver_rides.append(rides_list(rides))
 
                     return {"driver_offers": driver_rides}
 
@@ -231,3 +224,8 @@ class Ride:
 
         except Exception as e:
             return {"message": e}
+
+
+def rides_list(_list):
+        for ride in _list:
+            return ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7], ride[8])

@@ -1,11 +1,7 @@
-from app import DatabaseManager
+
+from app.user import check_details
 
 
 def check_ride(ride_id):
-    with DatabaseManager() as cursor:
-        """
-            Check if ride exists
-        """
-        cursor.execute("SELECT id FROM rides WHERE  id = %s", [ride_id])
-        exists = cursor.fetchone()
-        return exists
+    return check_details("SELECT id FROM rides WHERE  id = %s", [ride_id])
+

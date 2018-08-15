@@ -6,7 +6,7 @@ from flasgger import swag_from
 from flask import jsonify, Blueprint, request, make_response
 from app.decorators import login_required
 from app.rides.model import Ride
-from app.validators import ValidateUserEntries, check_id
+from app.validators import ValidateUserEntries,check_feild, id_regex
 
 blue_print_rides = Blueprint('blue_print_rides', __name__)
 
@@ -45,8 +45,7 @@ def create_ride(user_id):
 
         return make_response(jsonify(validate_flag), 400)
     except Exception as e:
-        print(e)
-        return make_response("Some thing went wrong on the server", 500)
+        return make_response("Some thing went wrong on the server ", 500)
 
 
 @swag_from('/app/apidocs/get_ride.yml')
@@ -54,7 +53,7 @@ def create_ride(user_id):
 @login_required
 def show_ride(user_id, ride_id):
     try:
-        if check_id(ride_id):
+        if check_feild(id_regex,ride_id):
             ride = Ride.get_ride(user_id, ride_id)
 
             return make_response(jsonify({"ride": ride}), 200)
@@ -89,7 +88,7 @@ def update_ride_offer(user_id, ride_id):
         destination = args.get("destination")
         price = args.get("price")
 
-        if check_id(ride_id):
+        if check_feild(id_regex,ride_id):
             validate_flag = ValidateUserEntries.create_ride(
                 source, destination, date, ride_id, time, price)
 
@@ -113,7 +112,7 @@ def update_ride_offer(user_id, ride_id):
 @login_required
 def delete_one_ride(user_id, ride_id):
     try:
-        if check_id(ride_id):
+        if check_feild(id_regex,ride_id):
             results = Ride.delete_ride(ride_id, user_id)
 
             return make_response(jsonify(results), 201)

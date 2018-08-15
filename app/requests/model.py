@@ -23,11 +23,9 @@ def request_json(request_id, ride_ref, requestor, status, date):
 
 class Request:
     def __init__(self, user_id, ride_id, status):
-        """
-               This method acts as a constructor for our class, its used to initialise class attributes
-        """
-        self.request_id = ''
+
         self.user_id = user_id
+        self.request_id = ''
         self.ride_id = ride_id
         self.status = status
 

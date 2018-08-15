@@ -37,3 +37,4 @@ omit =
     */home/travis/virtualenv/*
     *jwt/*
     *psycopg2/*
+    *contextvars.py

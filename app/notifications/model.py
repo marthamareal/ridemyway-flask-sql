@@ -12,9 +12,7 @@ def not_json(_id, message):
 
 class Notification:
     def __init__(self, user_id, request_id, message):
-        """
-                This method acts as a constructor for our class, its used to initialise class attributes
-        """
+
         self.id = ''
         self.user_id = user_id
         self.request_id = request_id

@@ -39,5 +39,3 @@ def index():
 def url_not_found(path):
     return make_response(jsonify({"message": "Requested url is not found"}), 404)
 
-
-

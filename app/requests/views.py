@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request, make_response
 from app.decorators import login_required
 from app.requests import not_approved
 from app.requests.model import Request
-from app.validators import check_id, check_approval
+from app.validators import check_feild, id_regex, check_approval
 
 blue_print_requests = Blueprint('blue_print_requests', __name__)
 
@@ -16,7 +16,7 @@ blue_print_requests = Blueprint('blue_print_requests', __name__)
 @login_required
 def create_request(user_id, ride_id):
     try:
-        if check_id(ride_id):
+        if check_feild(id_regex,ride_id):
             instance = Request(user_id, ride_id, "pending".title())
             results = Request.create_request(instance)
 
@@ -34,7 +34,7 @@ def create_request(user_id, ride_id):
 @login_required
 def get_requests(user_id, ride_id):
     try:
-        if check_id(ride_id):
+        if check_feild(id_regex, ride_id):
             requests = Request.get_ride_requests(ride_id, user_id)
 
             if requests.get("status"):
@@ -53,7 +53,7 @@ def get_requests(user_id, ride_id):
 def approve_ride_request(user_id, request_id):
     try:
         if not_approved(request_id) is "not_approved":
-            if check_id(request_id):
+            if check_feild(id_regex,request_id):
                 inputs = json.loads(request.data.decode())
 
                 if not inputs.get("approval"):
