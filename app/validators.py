@@ -77,26 +77,21 @@ class ValidateUserEntries:
     def create_ride(source, destination, date, creator_id, time, price):
 
         if not check_feild(name_regex,source):
-            return {"message": "Fill in a valid source avoid spaces, use , or -"}
+            form_errors.append("Fill in a valid source avoid spaces, use , or -")
 
         if not check_feild(name_regex,destination):
-            return {"message": "Fill in a valid "
-                    "destination avoid spaces, use , or -"}
-
-        if not check_feild(id_regex,creator_id):
-            return {"message": "Id must be an integer"}
+            form_errors.append("Fill in a valid "
+                    "destination avoid spaces, use , or -")
 
         if not check_feild(time_regex,time):
-            return {"message": "Input valid "
-                    "time attributes eg 10:30 AM"}
+            form_errors.append("Input valid "
+                    "time attributes eg 10:30 AM")
 
         if not check_feild(date_regex,date):
-            return {
-                "message": "Input a valid date format(yyyy-mm-dd) eg 2018-07-11"
-            }
-        if not check_feild(price_regex, price):
-            return {
-                "message": "Input a correct price eg 50,5000,10000....."
-            }
+            form_errors.append("Input a valid date format(yyyy-mm-dd) eg 2018-07-11")
 
+        if not check_feild(price_regex, price):
+            form_errors.append("Input a correct price eg 50,5000,10000.....")
+        if form_errors:
+            return form_errors
         return "pass"

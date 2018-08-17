@@ -14,37 +14,25 @@ blue_print_user = Blueprint('blue_print_user', __name__)
 def signup():
     try:
         args = json.loads(request.data.decode())
-        check_form_fields(args, "first name")
-        check_form_fields(args, "last name")
-        check_form_fields(args, "email")
-        check_form_fields(args, "city")
-        check_form_fields(args, "phone_no")
-        check_form_fields(args, "password")
-
-        form_errors()
-
-        first_name = args.get("first name")
-        last_name = args.get("last name")
-        email = args.get("email")
-        city = args.get("city")
-        phone_no = args.get("phone_no")
-        password = args.get("password")
-
+        missing_form_fields.clear()
+        first_name = check_form_fields(args, "first name")
+        last_name = check_form_fields(args, "last name")
+        email = check_form_fields(args, "email")
+        city = check_form_fields(args, "city")
+        phone_no = check_form_fields(args, "phone_no")
+        password = check_form_fields(args, "password")
+        if missing_form_fields:
+            return make_response(jsonify({"these fields are required": missing_form_fields}), 400)
         validate_flag = ValidateUserEntries.signup(
             first_name, last_name, email, city, phone_no, password)
         if validate_flag == "pass":
-
             user = User(first_name, last_name, email, city, phone_no, password)
             created_user = User.create_user(user)
-            if created_user.get("message"):
-                return make_response(jsonify(created_user), 400)
-            else:
-                return make_response(jsonify({"message": created_user}), 201)
+            return make_response(jsonify({"message": created_user["message"]}),  created_user["status"])
         else:
             message = "Your form has the following errors %s fix them before you submit" % form_errors
             form_errors.clear()
             return make_response(jsonify({"message": message}), 400)
-
     except Exception as e:
         logging.error("Something wrong happened: ", e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
@@ -54,27 +42,20 @@ def signup():
 def login():
     try:
         args = json.loads(request.data.decode())
-
-        check_form_fields(args, "email")
-        check_form_fields(args, "password")
-
-        form_errors()
-
-        email = args.get("email")
-        password = args.get("password")
+        missing_form_fields.clear()
+        email = check_form_fields(args, "email")
+        password = check_form_fields(args, "password")
+        if missing_form_fields:
+            return make_response(jsonify({"these fields are required": missing_form_fields}), 400)
 
         validate_flag = ValidateUserEntries.login(email, password)
-
         if validate_flag == "pass":
             _login = User.login_user(email, password)
-
             if _login.get("token"):
                 return make_response(jsonify(_login), 200)
-            else:
-                return make_response(jsonify(_login), 400)
-        else:
-            return make_response(jsonify(validate_flag), 400)
-
+                
+        validate_flag = {"message": "Email and password don't match"}
+        return make_response(jsonify(validate_flag), 400)
     except Exception as e:
         logging.error(e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
@@ -89,10 +70,3 @@ def logout(user_id):
     except Exception as e:
         logging.error(e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
-
-
-def form_errors():
-    if missing_form_fields:
-        message = "Fields %s are required" % missing_form_fields
-        missing_form_fields.clear()
-        return make_response(jsonify({"message": message}), 400)

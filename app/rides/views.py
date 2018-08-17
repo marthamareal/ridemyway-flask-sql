@@ -2,11 +2,12 @@ import json
 import logging
 
 from flasgger import swag_from
+from app.user import check_form_fields, missing_form_fields
+from flask import Blueprint, jsonify, make_response, request
 
-from flask import jsonify, Blueprint, request, make_response
 from app.decorators import login_required
 from app.rides.model import Ride
-from app.validators import ValidateUserEntries,check_feild, id_regex
+from app.validators import ValidateUserEntries, check_feild
 
 blue_print_rides = Blueprint('blue_print_rides', __name__)
 
@@ -17,34 +18,27 @@ blue_print_rides = Blueprint('blue_print_rides', __name__)
 def create_ride(user_id):
     try:
         args = json.loads(request.data.decode())
-        if not args.get("date"):
-            return make_response(jsonify({"message": "Field 'date' is required"}), 400)
-        if not args.get("time"):
-            return make_response(jsonify({"message": "Field 'time' is required"}), 400)
-        if not args.get("source"):
-            return make_response(jsonify({"message": "Field 'source' is required"}), 400)
-        if not args.get("destination"):
-            return make_response(jsonify({"message": "Field 'destination' is required"}), 400)
-        if not args.get("price"):
-            return make_response(jsonify({"message": "Field 'price' is required"}), 400)
+        missing_form_fields.clear()
+        date = check_form_fields(args,"date")
+        time = check_form_fields(args,"time")
+        source = check_form_fields(args,"source")
+        destination = check_form_fields(args,"destination")
+        price = check_form_fields(args,"price")
 
-        date = args.get("date")
-        time = args.get("time")
-        source = args.get("source")
-        destination = args.get("destination")
-        price = args.get("price")
-
+        if missing_form_fields:
+            return make_response(jsonify({"these fields are required": missing_form_fields}), 400)
+            
         validate_flag = ValidateUserEntries.create_ride(
             source, destination, date, user_id, time, price)
+        
         if validate_flag == "pass":
-
             ride_instance = Ride(date, time, source, destination, user_id, price)
             created_ride = Ride.create_ride(ride_instance)
-
             return make_response(jsonify({"ride": created_ride}), 201)
-
         return make_response(jsonify(validate_flag), 400)
+
     except Exception as e:
+        logging.error(e)
         return make_response("Some thing went wrong on the server ", 500)
 
 
@@ -53,14 +47,10 @@ def create_ride(user_id):
 @login_required
 def show_ride(user_id, ride_id):
     try:
-        if check_feild(id_regex,ride_id):
-            ride = Ride.get_ride(user_id, ride_id)
-
-            return make_response(jsonify({"ride": ride}), 200)
-
-        return make_response(jsonify({"error": "ride id must be integer"}), 400)
+        ride = Ride.get_ride(user_id, ride_id)
+        return make_response(jsonify({"ride": ride}), 200)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return make_response("Some thing went wrong on the server", 500)
 
 
@@ -72,7 +62,7 @@ def get_all_rides(user_id):
         rides = Ride.get_rides(user_id)
         return make_response(jsonify(rides), 200)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return make_response("Some thing went wrong on the server", 500)
 
 
@@ -80,7 +70,7 @@ def get_all_rides(user_id):
 @login_required
 def update_ride_offer(user_id, ride_id):
     try:
-
+        
         args = json.loads(request.data.decode())
         date = args.get("date")
         time = args.get("time")
@@ -88,22 +78,18 @@ def update_ride_offer(user_id, ride_id):
         destination = args.get("destination")
         price = args.get("price")
 
-        if check_feild(id_regex,ride_id):
-            validate_flag = ValidateUserEntries.create_ride(
-                source, destination, date, ride_id, time, price)
+        validate_flag = ValidateUserEntries.create_ride(
+            source, destination, date, ride_id, time, price)
 
-            if validate_flag == "pass":
+        if validate_flag == "pass":
+            results = Ride.update(user_id,
+                                    ride_id, source, destination, date, time, price)
 
-                results = Ride.update(user_id,
-                                      ride_id, source, destination, date, time, price)
+            return make_response(jsonify(results), 201)
 
-                return make_response(jsonify(results), 201)
-
-            return jsonify(validate_flag)
-        return make_response(jsonify({"error": "ride id must be integer"}), 400)
-
+        return jsonify(validate_flag)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return make_response("Some thing went wrong on the server", 500)
 
 
@@ -112,12 +98,9 @@ def update_ride_offer(user_id, ride_id):
 @login_required
 def delete_one_ride(user_id, ride_id):
     try:
-        if check_feild(id_regex,ride_id):
-            results = Ride.delete_ride(ride_id, user_id)
+        results = Ride.delete_ride(ride_id, user_id)
 
-            return make_response(jsonify(results), 201)
-
-        return make_response(jsonify({"error": "ride id must be integer"}), 400)
+        return make_response(jsonify(results), 201)
     except Exception as e:
         logging.error(e)
         return make_response("Some thing went wrong on the server", 500)
@@ -131,7 +114,6 @@ def get_driver_rides(user_id):
         rides = Ride.get_driver_offers(user_id)
         if rides.get("status"):
             return make_response(jsonify(rides), 400)
-
         return make_response(jsonify(rides), 200)
     except Exception as e:
         logging.error(e)

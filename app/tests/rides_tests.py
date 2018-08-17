@@ -27,6 +27,7 @@ class RideTests(unittest.TestCase):
         data = json.dumps(self.sample_ride)
         response = self.test_client.post(
             '/rides/create', data=data, headers=self.login_headers)
+        print(response.data.decode())
         self.assertEqual(response.status_code, 201)
 
     def test_show_ride(self):
@@ -49,7 +50,6 @@ class RideTests(unittest.TestCase):
                               headers=self.login_headers)
 
         new_data = json.dumps(self.sample_updated_ride)
-
         response = self.test_client.put(
             '/rides/update/1', data=new_data, headers=self.login_headers)
         self.assertEqual(response.status_code, 201)
@@ -60,6 +60,9 @@ class RideTests(unittest.TestCase):
                               headers=self.login_headers)
         response = self.test_client.delete(
             '/rides/delete/1', headers=self.login_headers)
+        results = json.loads(response.data.decode())
+        self.assertEqual(
+            results, {'message': 'Ride offer deleted successfully'})
         self.assertEqual(response.status_code, 201)
 
     def tearDown(self):
