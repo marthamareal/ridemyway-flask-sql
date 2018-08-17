@@ -21,8 +21,6 @@ def signup():
         check_form_fields(args, "phone_no")
         check_form_fields(args, "password")
 
-        form_errors()
-
         first_name = args.get("first name")
         last_name = args.get("last name")
         email = args.get("email")
@@ -54,27 +52,19 @@ def signup():
 def login():
     try:
         args = json.loads(request.data.decode())
-
         check_form_fields(args, "email")
         check_form_fields(args, "password")
-
-        form_errors()
-
         email = args.get("email")
         password = args.get("password")
-
         validate_flag = ValidateUserEntries.login(email, password)
-
         if validate_flag == "pass":
             _login = User.login_user(email, password)
-
             if _login.get("token"):
                 return make_response(jsonify(_login), 200)
             else:
                 return make_response(jsonify(_login), 400)
         else:
             return make_response(jsonify(validate_flag), 400)
-
     except Exception as e:
         logging.error(e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
@@ -89,10 +79,3 @@ def logout(user_id):
     except Exception as e:
         logging.error(e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
-
-
-def form_errors():
-    if missing_form_fields:
-        message = "Fields %s are required" % missing_form_fields
-        missing_form_fields.clear()
-        return make_response(jsonify({"message": message}), 400)

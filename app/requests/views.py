@@ -16,15 +16,11 @@ blue_print_requests = Blueprint('blue_print_requests', __name__)
 @login_required
 def create_request(user_id, ride_id):
     try:
-        if check_feild(id_regex,ride_id):
-            instance = Request(user_id, ride_id, "pending".title())
-            results = Request.create_request(instance)
-
-            if results.get("status"):
-                return make_response(jsonify(results), 400)
-
-            return make_response(jsonify(results), 201)
-        return make_response({"error": "ride id must be integer"}, 400)
+        instance = Request(user_id, ride_id, "pending".title())
+        results = Request.create_request(instance)
+        if results.get("status"):
+            return make_response(jsonify(results), 400)
+        return make_response(jsonify(results), 201)
     except Exception as e:
         logging.error(e)
         return make_response("Some thing went wrong on the server", 500)
@@ -34,15 +30,11 @@ def create_request(user_id, ride_id):
 @login_required
 def get_requests(user_id, ride_id):
     try:
-        if check_feild(id_regex, ride_id):
-            requests = Request.get_ride_requests(ride_id, user_id)
-
-            if requests.get("status"):
-                return make_response(jsonify(requests), 400)
-            else:
-                return make_response(jsonify(requests), 200)
-
-        return make_response(jsonify({"message": "ride id must be integer"}), 400)
+        requests = Request.get_ride_requests(ride_id, user_id)
+        if requests.get("status"):
+            return make_response(jsonify(requests), 400)
+        else:
+            return make_response(jsonify(requests), 200)
     except Exception as e:
         logging.error(e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
@@ -53,29 +45,18 @@ def get_requests(user_id, ride_id):
 def approve_ride_request(user_id, request_id):
     try:
         if not_approved(request_id) is "not_approved":
-            if check_feild(id_regex,request_id):
-                inputs = json.loads(request.data.decode())
-
-                if not inputs.get("approval"):
-                    return make_response(jsonify({"message": "Field 'approval' is required"}), 400)
-
-                approval = inputs.get("approval")
-
-                if check_approval(approval) is "error":
-                    return make_response(jsonify({"message": "Approval must be Y or N"}), 400)
-
-                results = Request.approve_request(
-                    request_id, user_id, approval)
-
-                if results.get("status"):
-                    return make_response(jsonify(results), 401)
-
-                return make_response(jsonify(results), 201)
-
-            return make_response(jsonify({"message": "request id must be integer"}), 400)
+            inputs = json.loads(request.data.decode())
+            if not inputs.get("approval"):
+                return make_response(jsonify({"message": "Field 'approval' is required"}), 400)
+            approval = inputs.get("approval")
+            if check_approval(approval) is "error":
+                return make_response(jsonify({"message": "Approval must be Y or N"}), 400)
+            results = Request.approve_request(request_id, user_id, approval)
+            if results.get("status"):
+                return make_response(jsonify(results), 401)
+            return make_response(jsonify(results), 201)
         else:
             return make_response(jsonify({"message": "Request is already approved"}), 400)
-
     except Exception as e:
         logging.error(e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)

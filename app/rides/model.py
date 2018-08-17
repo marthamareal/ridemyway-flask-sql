@@ -1,39 +1,33 @@
 from app.user import check_user
 from app.db_manager import DatabaseManager
+from app.user import check_details
 
 
-def ride_json(_id, ref_no, source, destination, date, creator_id, time, requests_no, price):
-    """
-            This method receives an object of the class, creates and returns a ride
-    """
-    ride = {
-        "id": _id,
-        "ref_no": ref_no,
-        "date": date,
-        "time": time,
-        "source": source,
-        "destination": destination,
-        "creator_id": creator_id,
-        "requests_no": requests_no,
-        "price": price
+def ride_json(result_turple):
+    return {
+        "id": result_turple[0],
+        "ref_no": result_turple[1],
+        "date": result_turple[2],
+        "time": result_turple[3],
+        "source": result_turple[4],
+        "destination": result_turple[5],
+        "creator_id": result_turple[6],
+        "requests_no": result_turple[7],
+        "price": result_turple[8]
     }
-    return ride
 
 
 def check_user_ride(ride_id, user_id):
     """This method returns false when ride is not found and true when user created it"""
     try:
-        with DatabaseManager() as cursor:
-            cursor.execute("SELECT ref_no FROM rides WHERE id = %s", [ride_id])
-            if cursor.fetchone():
-
-                cursor.execute("SELECT ref_no FROM rides WHERE creator_id = %s AND id = %s", [
-                               user_id, ride_id])
-                if cursor.fetchone():
-                    return True
-                return False
-            return "Ride Not Found"
-
+        results = check_details(
+            "SELECT ref_no FROM rides WHERE id = %s", [ride_id])
+        if results:
+            if check_details("SELECT ref_no FROM rides WHERE creator_id = %s AND id = %s", [
+                    user_id, ride_id]):
+                return True
+            return False
+        return "Ride Not Found"
     except Exception as e:
         return e
 
@@ -58,23 +52,14 @@ class Ride:
 
         sql = "INSERT INTO rides (ref_no, source, destination, date, creator_id, time, requests_no, price)" \
               " VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id"
-
-        with DatabaseManager() as cursor:
-
-            if check_user(self.creator_id):
-                try:
-                    cursor.execute(sql, (self.ref_no, self.source, self.destination, self.date,
-                                         self.creator_id, self.time, self.requests_no, self.price))
-
-                    cursor.execute(
-                        "SELECT * FROM rides WHERE ref_no = '%s'" % self.ref_no)
-                    result_ride = cursor.fetchall()
-
-                    return rides_list(result_ride)
-                except Exception as e:
-                    return e
-            else:
-                return {"message": "You are not registered, Register to create ride"}
+        try:
+            check_details(sql, (self.ref_no, self.source, self.destination, self.date,
+                                self.creator_id, self.time, self.requests_no, self.price))
+            result_ride = check_details(
+                "SELECT * FROM rides WHERE ref_no = %s", [self.ref_no])
+            return ride_json(result_ride)
+        except Exception as e:
+            return e
 
     @staticmethod
     def get_ride(user_id, ride_id):
@@ -89,7 +74,7 @@ class Ride:
             with DatabaseManager() as cursor:
                 try:
                     cursor.execute(
-                        """SELECT date, ref_no, source, destination,time, 
+                        """SELECT date, ref_no, source, destination,time,
                                   concat(l_name,' ',f_name)  as creator,
                                   phone_no as phone,
                                   price
@@ -116,26 +101,20 @@ class Ride:
 
     @staticmethod
     def get_rides(user_id):
-        """
-                This method returns all ride created in our database
-        """
         all_rides = []
-
         if check_user(user_id):
-
             with DatabaseManager() as cursor:
                 try:
                     cursor.execute("SELECT id, ref_no, source, destination, date, "
                                    "creator_id, time, requests_no, price FROM rides")
                     rides = cursor.fetchall()
                     if rides:
-                        all_rides.append(rides_list(rides))
-
+                        for ride in rides:
+                            all_rides.append(rides_list(ride))
                         return {"Ride offers": all_rides}
                     return {"Message": "No ride Found"}
                 except Exception as e:
                     return e
-
         return {"Message": "Login (create account) to view the offers"}
 
     @staticmethod
@@ -226,6 +205,5 @@ class Ride:
             return {"message": e}
 
 
-def rides_list(_list):
-        for ride in _list:
-            return ride_json(ride[0], ride[1], ride[2], ride[3], ride[4], ride[5], ride[6], ride[7], ride[8])
+def rides_list(ride):
+    return ride_json(ride)

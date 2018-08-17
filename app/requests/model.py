@@ -5,21 +5,17 @@ from app.requests import check_request, check_request_user_ride
 from app.rides import check_ride
 from app.user import check_user
 from app import DatabaseManager
+from app.user import check_details
 
 
-def request_json(request_id, ride_ref, requestor, status, date):
-    """
-          This method receives an object of the class, creates and returns a dictionary from the object
-    """
-    request = {
-        "request_id": request_id,
-        "requestor": requestor,
-        "ride_ref": ride_ref,
-        "status": status,
-        "date": date
+def request_json(results):
+    return  { 
+        "request_id": results[0],
+        "requestor": results[1],
+        "ride_ref": results[2],
+        "status": results[3],
+        "date": results[4]
     }
-    return request
-
 
 class Request:
     def __init__(self, user_id, ride_id, status):
@@ -31,52 +27,23 @@ class Request:
 
     def create_request(self):
         sql = "INSERT INTO requests (ride_id, requestor_id, status) VALUES (%s, %s, %s) RETURNING id"
-        """
-             Check if user exists
-        """
-        if check_user(self.user_id):
-
-            try:
-                with DatabaseManager() as cursor:
-                    if check_ride(self.ride_id):
-                        if check_request_user_ride(self.user_id, self.ride_id):
-
-                            cursor.execute(
-                                sql, (self.ride_id, self.user_id, self.status))
-
-                            if cursor.fetchone():
-                                return {
-                                    "message": "request made successfully",
-                                }
-
-                            return {
-                                "message": "Failed to make request",
-                                "status": 400
-                            }
-
-                        else:
-                            return {
-                                "message": "You already Requested this Ride",
-                                "status": 400
-                            }
-
+        try:
+            with DatabaseManager() as cursor:
+                if check_ride(self.ride_id) and check_request_user_ride(self.user_id, self.ride_id):
+                    cursor.execute(
+                        sql, (self.ride_id, self.user_id, self.status))
+                    return {"message": "request made successfully"}
+                else:
                     return {
-                        "message": "Ride not found",
-                        "status": 400
-                    }
-            except Exception as e:
-                return e
-        else:
-            return {
-                "message": "You are not registered, Register to request ride",
-                "code": 401
-            }
+                            "message": "Ride not found or You already Requested this Ride",
+                            "status": 400
+                        }
+        except Exception as e:
+            return e
 
     @staticmethod
     def get_ride_requests(ride_id, user_id):
-
         all_requests_on_given_ride = []
-
         sql = """SELECT requests.id,
                       ref_no as ride_ref, 
                      concat(f_name,' ',l_name) as requestor,
@@ -86,12 +53,7 @@ class Request:
                      INNER JOIN users u on requests.requestor_id = u.id
                      INNER JOIN rides r on requests.ride_id = r.id
                      WHERE ride_id = %s"""
-
-        """
-            Check if user exists
-        """
         if check_user(user_id):
-
             try:
                 with DatabaseManager() as cursor:
                     if check_ride(ride_id):
@@ -99,8 +61,7 @@ class Request:
                         results = cursor.fetchall()
                         if results:
                             for result in results:
-                                all_requests_on_given_ride.append(request_json(result[0],
-                                                                  result[1], result[2], result[3], result[4]))
+                                all_requests_on_given_ride.append(request_json(result))
                             return {
                                 "requests": all_requests_on_given_ride
                             }
@@ -123,52 +84,36 @@ class Request:
 
     @staticmethod
     def approve_request(request_id, user_id, status):
-
-        if check_user(user_id):
-
-            if check_request(request_id):
-                try:
-                    with DatabaseManager() as cursor:
-
-                        cursor.execute(
-                            "SELECT ride_id FROM requests WHERE id = '%s'" % request_id)
-                        ride_id = cursor.fetchone()
-                        # This sql determines whether the user to approve request is owner of ride offer
-
-                        sql = """SELECT creator_id, ref_no FROM rides WHERE 
-                                              id = %s AND creator_id = %s"""
-                        cursor.execute(sql, (ride_id, user_id))
-                        results = cursor.fetchone()
-
-                        if results:
-                            creator_id = str(results[0])
-                            ride_ref_no = results[1]
-
-                            cursor.execute(
-                                "SELECT l_name FROM users WHERE id = %s", creator_id)
-                            driver = cursor.fetchone()
-                            update_sql = "UPDATE requests SET status = '%s' WHERE id = '%s'" % (
-                                status.title(), request_id)
-
-                            if status.title() == "Y":
-                                message = "%s Accepted you to join ride %s" % (
-                                    driver[0], ride_ref_no)
-                            else:
-                                message = "%s Rejected you to join ride %s" % (
-                                    driver[0], ride_ref_no)
-
-                            notification = Notification(
-                                user_id, request_id, message)
-                            Notification.create_notification(notification)
-
-                            cursor.execute(update_sql)
-                            return {"message": "Approval action was successful"}
-                        else:
-                            return {"message": "Access Denied", "status": 401}
-
-                except Exception as e:
-                    logging.error(e)
-            else:
-                return {"message": "Request not found"}
+        if check_request(request_id):
+            try:
+                ride_id = check_details("SELECT ride_id FROM requests WHERE id = %s", [request_id])
+                sql = """SELECT creator_id, ref_no FROM rides WHERE 
+                        id = %s AND creator_id = %s"""
+                results = check_details(sql, [ride_id, user_id])
+                if results:
+                    creator_id = str(results[0])
+                    ride_ref_no = results[1]
+                    driver = check_details("SELECT l_name FROM users WHERE id = %s", creator_id)
+                    update_sql = "UPDATE requests SET status = %s WHERE id = %s Returning id"
+                    message = create_message(status, driver, ride_ref_no)
+                    notification = Notification(
+                        user_id, request_id, message)
+                    Notification.create_notification(notification)
+                    check_details(update_sql, [status.title(), request_id])
+                    return {"message": "Approval action was successful"}
+                else:
+                    return {"message": "Access Denied", "status": 401}
+            except Exception as e:
+                logging.error(e)
         else:
-            return {"message": "You are not registered, Register to request ride"}
+            return {"message": "Request not found"}
+
+
+def create_message(status, driver, ride_ref_no):
+    if status.title() == "Y":
+        message = "%s Accepted you to join ride %s" % (
+                driver[0], ride_ref_no)
+    else:
+        message = "%s Rejected you to join ride %s" % (
+                driver[0], ride_ref_no)
+    return message
