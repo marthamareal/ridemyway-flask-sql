@@ -34,19 +34,19 @@ def check_user_ride(ride_id, user_id):
 
 class Ride:
 
-    def __init__(self, date, time, source, destination, creator_id, price):
+    def __init__(self, creator_id, args):
         """
                 This method acts as a constructor for our class, its used to initialise class attributes
         """
         self.id = ''
         self.ref_no = self.generate_ref_no()
-        self.date = date
-        self.time = time
-        self.source = source
+        self.date = args.get("date")
+        self.time = args.get("time")
+        self.source = args.get("source")
         self.creator_id = creator_id
-        self.destination = destination
+        self.destination = args.get("destination")
         self.requests_no = 0
-        self.price = price
+        self.price = args.get("price")
 
     def create_ride(self):
 
@@ -118,7 +118,7 @@ class Ride:
         return {"Message": "Login (create account) to view the offers"}
 
     @staticmethod
-    def update(user_id, ride_id, source, destination, date, time, price):
+    def update(user_id, ride_id, args):
 
         if check_user_ride(ride_id, user_id) == "Not Found":
             return {"ride": "ride not found"}
@@ -132,7 +132,8 @@ class Ride:
                                                                        WHERE id = %s  RETURNING *
                                                      """
                         cursor.execute(
-                            update, (source, destination, date, time, ride_id, price))
+                            update, (args.get("source"), args.get("destination"), args.get("date"),
+                             args.get("time"), args.get("ride_id"), args.get("price")))
                         ride = cursor.fetchone()
 
                         if ride:

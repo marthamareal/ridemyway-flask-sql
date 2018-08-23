@@ -8,14 +8,14 @@ from app.validators import ValidateUserEntries
 
 class User:
 
-    def __init__(self, f_name, l_name, email, city, phone_no, password):
+    def __init__(self, args):
         self.id = ''
-        self.f_name = f_name
-        self.l_name = l_name
-        self.email = email
-        self.city = city
-        self.password = password
-        self.phone_no = phone_no
+        self.f_name = args.get("first name")
+        self.l_name = args.get("last name")
+        self.email = args.get("email")
+        self.city = args.get("city")
+        self.password = args.get("password")
+        self.phone_no = args.get("phone_no")
         self.logged_in = 0
 
     def create_user(self):
@@ -40,8 +40,7 @@ class User:
                         "SELECT * FROM users WHERE email = '%s'" % self.email)
                     result_user = cursor.fetchone()
 
-                    return self.user_json(result_user[0], result_user[1], result_user[2],
-                                          result_user[3], result_user[4], result_user[5], result_user[6])
+                    return self.user_json(result_user)
         except Exception as e:
             return e
 
@@ -81,15 +80,15 @@ class User:
             return e
 
     @staticmethod
-    def user_json(user_id, f_name, l_name, email, city, phone_no, password):
+    def user_json(user):
         return {
-            "id": user_id,
-            "first name": f_name,
-            "last name": l_name,
-            "email": email,
-            "city": city,
-            "phone_no": phone_no,
-            "password": password
+            "id": user[0],
+            "first name": user[1],
+            "last name": user[2],
+            "email": user[3],
+            "city": user[4],
+            "phone_no": user[5],
+            "password": user[6]
         }
 
 

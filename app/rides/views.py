@@ -24,16 +24,10 @@ def create_ride(user_id):
         check_form_fields(args,"destination")
         check_form_fields(args,"price")
 
-        date = args.get("date")
-        time = args.get("time")
-        source = args.get("source")
-        destination = args.get("destination")
-        price = args.get("price")
-        validate_flag = ValidateUserEntries.create_ride(
-            source, destination, date, user_id, time, price)
+        validate_flag = ValidateUserEntries.create_ride(args)
         if validate_flag == "pass":
 
-            ride_instance = Ride(date, time, source, destination, user_id, price)
+            ride_instance = Ride(user_id, args)
             created_ride = Ride.create_ride(ride_instance)
 
             return make_response(jsonify({"ride": created_ride}), 201)
@@ -76,18 +70,12 @@ def update_ride_offer(user_id, ride_id):
     try:
 
         args = json.loads(request.data.decode())
-        date = args.get("date")
-        time = args.get("time")
-        source = args.get("source")
-        destination = args.get("destination")
-        price = args.get("price")
 
-        validate_flag = ValidateUserEntries.create_ride(
-            source, destination, date, ride_id, time, price)
+        validate_flag = ValidateUserEntries.create_ride(args)
 
         if validate_flag == "pass":
             results = Ride.update(user_id,
-                                    ride_id, source, destination, date, time, price)
+                                    ride_id, args)
 
             return make_response(jsonify(results), 201)
 

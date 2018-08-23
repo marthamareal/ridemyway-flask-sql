@@ -21,18 +21,10 @@ def signup():
         check_form_fields(args, "phone_no")
         check_form_fields(args, "password")
 
-        first_name = args.get("first name")
-        last_name = args.get("last name")
-        email = args.get("email")
-        city = args.get("city")
-        phone_no = args.get("phone_no")
-        password = args.get("password")
-
-        validate_flag = ValidateUserEntries.signup(
-            first_name, last_name, email, city, phone_no, password)
+        validate_flag = ValidateUserEntries.signup(args)
         if validate_flag == "pass":
 
-            user = User(first_name, last_name, email, city, phone_no, password)
+            user = User(args)
             created_user = User.create_user(user)
             if created_user.get("message"):
                 return make_response(jsonify(created_user), 400)
@@ -44,7 +36,7 @@ def signup():
             return make_response(jsonify({"message": message}), 400)
 
     except Exception as e:
-        logging.error("Something wrong happened: ", e)
+        logging.error(e)
         return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 
