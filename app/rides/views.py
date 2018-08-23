@@ -18,21 +18,18 @@ blue_print_rides = Blueprint('blue_print_rides', __name__)
 def create_ride(user_id):
     try:
         args = json.loads(request.data.decode())
-        check_form_fields(args,"date")
-        check_form_fields(args,"time")
-        check_form_fields(args,"source")
-        check_form_fields(args,"destination")
-        check_form_fields(args,"price")
-
+        missing_form_fields.clear()
+        if missing_form_fields:
+            return make_response(jsonify({"these fields are required": missing_form_fields}), 400)
+            
         validate_flag = ValidateUserEntries.create_ride(args)
+        
         if validate_flag == "pass":
-
             ride_instance = Ride(user_id, args)
             created_ride = Ride.create_ride(ride_instance)
-
             return make_response(jsonify({"ride": created_ride}), 201)
-
         return make_response(jsonify(validate_flag), 400)
+
     except Exception as e:
         logging.error(e)
         return make_response("Some thing went wrong on the server ", 500)
@@ -56,8 +53,6 @@ def show_ride(user_id, ride_id):
 def get_all_rides(user_id):
     try:
         rides = Ride.get_rides(user_id)
-        print("dkcdshcfdfcvhdf")
-        print(rides)
         return make_response(jsonify(rides), 200)
     except Exception as e:
         logging.error(e)
@@ -68,15 +63,13 @@ def get_all_rides(user_id):
 @login_required
 def update_ride_offer(user_id, ride_id):
     try:
-
+        
         args = json.loads(request.data.decode())
 
         validate_flag = ValidateUserEntries.create_ride(args)
 
         if validate_flag == "pass":
-            results = Ride.update(user_id,
-                                    ride_id, args)
-
+            results = Ride.update(user_id,ride_id, args)
             return make_response(jsonify(results), 201)
 
         return jsonify(validate_flag)

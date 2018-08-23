@@ -15,25 +15,13 @@ price_regex = "^[0-9]{3,}$"
 
 
 def check_feild(pattern_regex, field):
-    if not re.match(pattern_regex, str(field)):
-        return False
-    else:
-        return True
-
+    return re.match(pattern_regex, str(field))
 
 def check_password(password):
-    if re.match(password_regex, password.lstrip(' ')):
-        if len(password) < 8:
-            return False
-        else:
-            return True
-
+    return re.match(password_regex, password.lstrip(' ')) and len(password) > 8
 
 def check_approval(approval):
-    if not re.match(approval_regex, approval):
-        return "error"
-    else:
-        return "pass"
+    return "error" if not re.match(approval_regex, approval) else "pass"
 
 
 class ValidateUserEntries:
@@ -41,11 +29,11 @@ class ValidateUserEntries:
     @staticmethod
     def signup(args):
 
-        if not check_feild(name_regex, args.get("first name")):
+        if not check_feild(name_regex, args.get("f_name")):
             form_errors.append("first name must have at least 3 "
                                "characters and no numbers and spaces in it")
 
-        if not check_feild(name_regex,args.get("last name")):
+        if not check_feild(name_regex,args.get("l_name")):
             form_errors.append("last name must have at least 3 "
                                "characters and no numbers and spacesin it")
 
@@ -77,26 +65,18 @@ class ValidateUserEntries:
     def create_ride(args):
 
         if not check_feild(name_regex,args.get("source")):
-            return {"message": "Fill in a valid source avoid spaces, use , or -"}
-
+            form_errors.append("Fill in a valid source avoid spaces, use , or -")
         if not check_feild(name_regex,args.get("destination")):
-            return {"message": "Fill in a valid "
-                    "destination avoid spaces, use , or -"}
-
-        if not check_feild(id_regex,args.get("creator_id")):
-            return {"message": "Id must be an integer"}
-
+            form_errors.append("Fill in a valid "
+                    "destination avoid spaces, use , or -")
         if not check_feild(time_regex,args.get("time")):
-            return {"message": "Input valid "
-                    "time attributes eg 10:30 AM"}
-
+            form_errors.append("Input valid "
+                    "time attributes eg 10:30 AM")
         if not check_feild(date_regex,args.get("date")):
-            return {
-                "message": "Input a valid date format(yyyy-mm-dd) eg 2018-07-11"
-            }
-        if not check_feild(price_regex, args.get("price")):
-            return {
-                "message": "Input a correct price eg 50,5000,10000....."
-            }
+            form_errors.append("Input a valid date format(yyyy-mm-dd) eg 2018-07-11")
 
+        if not check_feild(price_regex, args.get("price")):
+            form_errors.append("Input a correct price eg 50,5000,10000.....")
+        if form_errors:
+            return form_errors
         return "pass"

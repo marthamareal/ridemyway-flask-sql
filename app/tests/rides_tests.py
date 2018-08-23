@@ -47,9 +47,7 @@ class RideTests(unittest.TestCase):
         data = json.dumps(self.sample_ride)
         self.test_client.post('/rides/create', data=data,
                               headers=self.login_headers)
-
         new_data = json.dumps(self.sample_updated_ride)
-
         response = self.test_client.put(
             '/rides/update/1', data=new_data, headers=self.login_headers)
         self.assertEqual(response.status_code, 201)

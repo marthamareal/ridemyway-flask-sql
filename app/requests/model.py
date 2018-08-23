@@ -9,7 +9,7 @@ from app.user import check_details
 
 
 def request_json(results):
-    return  { 
+    return  {
         "request_id": results[0],
         "requestor": results[1],
         "ride_ref": results[2],
@@ -44,43 +44,29 @@ class Request:
     @staticmethod
     def get_ride_requests(ride_id, user_id):
         all_requests_on_given_ride = []
-        sql = """SELECT requests.id,
-                      ref_no as ride_ref, 
+        sql = """SELECT requests.id,ref_no as ride_ref, 
                      concat(f_name,' ',l_name) as requestor,
-                     status,
-                     date
+                     status,date
                      FROM requests 
                      INNER JOIN users u on requests.requestor_id = u.id
                      INNER JOIN rides r on requests.ride_id = r.id
                      WHERE ride_id = %s"""
-        if check_user(user_id):
-            try:
-                with DatabaseManager() as cursor:
-                    if check_ride(ride_id):
-                        cursor.execute(sql, [ride_id])
-                        results = cursor.fetchall()
-                        if results:
-                            for result in results:
-                                all_requests_on_given_ride.append(request_json(result))
-                            return {
-                                "requests": all_requests_on_given_ride
-                            }
+        try:
+            with DatabaseManager() as cursor:
+                    cursor.execute(sql, [ride_id])
+                    results = cursor.fetchall()
+                    if results:
+                        for result in results:
+                            all_requests_on_given_ride.append(request_json(result))
                         return {
-                            "message": "Ride has no requests",
-                            "status": 400
+                            "requests": all_requests_on_given_ride
                         }
-
                     return {
-                        "message": "Ride not Found",
+                        "message": "Ride has no requests",
                         "status": 400
                     }
-            except Exception as e:
-                logging.error(e)
-
-        return {
-            "message": "You are not registered, Register to request ride",
-            "status": 400
-        }
+        except Exception as e:
+            logging.error(e)
 
     @staticmethod
     def approve_request(request_id, user_id, status):
