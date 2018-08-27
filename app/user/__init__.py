@@ -2,10 +2,8 @@ from app import DatabaseManager
 
 missing_form_fields = []
 
-
 def check_user(user_id):
         return check_details("SELECT id FROM users WHERE id = %s", [user_id])
-
 
 def check_form_fields(args, field_name):
     if not args.get(field_name):
