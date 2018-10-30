@@ -49,7 +49,8 @@ class Ride:
                            WHERE rides.id = %s"""
                 ride = check_details(sql, [ride_id])
                 if ride:
-                    ride_details(ride)
+
+                    return ride_details(ride)
                 return {"message": "Requested ride is not found"}
             except Exception as e:
                 return e
@@ -154,14 +155,15 @@ def ride_json(result_turple):
     return {
         "id": result_turple[0],
         "ref_no": result_turple[1],
-        "date": result_turple[2],
-        "time": result_turple[3],
-        "source": result_turple[4],
-        "destination": result_turple[5],
-        "creator_id": result_turple[6],
+        "source": result_turple[2],
+        "destination": result_turple[3],
+        "date": result_turple[4],
+        "creator_id": result_turple[5],
+        "time": result_turple[6],
         "requests_no": result_turple[7],
         "price": result_turple[8]
     }
+
 
 def ride_details(ride):
     return {"date": ride[0],
