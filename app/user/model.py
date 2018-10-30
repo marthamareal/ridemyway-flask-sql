@@ -42,7 +42,7 @@ class User:
     def login_user(email, password):
         try:
             with DatabaseManager() as cursor:
-                sql = "select id,email, password from users where email = %s and password = %s"
+                sql = "select id,email, password, l_name from users where email = %s and password = %s"
                 logged_in = "update users set logged_in = TRUE where email = %s and password = %s"
 
                 cursor.execute(sql, (email, hash_password(password)))
@@ -52,7 +52,7 @@ class User:
                         {'email': email, 'user_id': results[0]}, secret, algorithm='HS256').decode()
 
                     cursor.execute(logged_in, (email, hash_password(password)))
-                    return {"message": "You are logged in", "token": token}
+                    return {"message": "You are logged in", "token": token, 'lname': results[3]}
                 return;
         except Exception as e:
             return e

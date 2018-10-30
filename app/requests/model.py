@@ -9,13 +9,15 @@ from app.user import check_details
 
 
 def request_json(results):
-    return  {
+
+    return {
         "request_id": results[0],
-        "requestor": results[1],
-        "ride_ref": results[2],
+        "ride_ref": results[1],
+        "requestor": results[2],
         "status": results[3],
         "date": results[4]
     }
+
 
 class Request:
     def __init__(self, user_id, ride_id, status):
