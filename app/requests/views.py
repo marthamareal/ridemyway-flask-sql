@@ -23,7 +23,7 @@ def create_request(user_id, ride_id):
         return make_response(jsonify(results), 201)
     except Exception as e:
         logging.error(e)
-        return make_response("Some thing went wrong on the server", 500)
+        make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 
 @blue_print_requests.route('/rides/requests/<int:ride_id>', methods=['GET'])
@@ -51,6 +51,7 @@ def approve_ride_request(user_id, request_id):
             approval = inputs.get("approval")
             if check_approval(approval) is "error":
                 return make_response(jsonify({"message": "Approval must be Y or N"}), 400)
+
             results = Request.approve_request(request_id, user_id, approval)
             if results.get("status"):
                 return make_response(jsonify(results), 401)

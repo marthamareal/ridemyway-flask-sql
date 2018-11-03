@@ -27,7 +27,7 @@ class Ride:
             check_details(sql, (self.ref_no, self.source, self.destination, self.date,
                                 self.creator_id, self.time, self.requests_no, self.price))
             result_ride = check_details(
-                "SELECT * FROM rides WHERE ref_no = %s", [self.ref_no])
+                "SELECT id,ref_no, source, destination, date, creator_id, time, requests_no, price FROM rides WHERE ref_no = %s", [self.ref_no])
             return ride_json(result_ride)
         except Exception as e:
             return e
@@ -43,11 +43,14 @@ class Ride:
                 sql = """SELECT date, ref_no, source, destination,time,
                           concat(l_name,' ',f_name)  as creator,
                           phone_no as phone,
-                          price
+                          price,
+                           (SELECT count (*) FROM requests
+                          INNER JOIN rides r on requests.ride_id = r.id
+                          WHERE r.id = %s) as requests
                           FROM rides
                            INNER JOIN users ON rides.creator_id = users.id
                            WHERE rides.id = %s"""
-                ride = check_details(sql, [ride_id])
+                ride = check_details(sql, [ride_id, ride_id])
                 if ride:
 
                     return ride_details(ride)
@@ -68,27 +71,28 @@ class Ride:
                         for ride in rides:
                             all_rides.append(ride_json(ride))
                         return {"Ride offers": all_rides}
-                    return {"Message": "No ride Found"}
+                    return {"message": "No ride Found"}
                 except Exception as e:
                     return e
-        return {"Message": "Login (create account) to view the offers"}
+        return {"message": "Login (create account) to view the offers"}
 
     @staticmethod
     def update(user_id, ride_id, args):
+
         if check_user_ride(ride_id, user_id):
             try:
                 update = """UPDATE rides SET source = %s, destination = %s, date = %s, time = %s , price = %s
                                                                    WHERE id = %s  RETURNING *
                                                  """
                 ride = check_details(update, (args.get("source"), args.get("destination"), args.get("date"),
-                            args.get("time"), args.get("ride_id"), args.get("price")))
+                            args.get("time"), args.get("price"), ride_id))
                 if ride:
                     return {"updated ride": ride_json(ride)}
+                return {"message": "No ride Found"}
+
             except Exception as e:
                 return e
-
-        if not check_user_ride(ride_id, user_id):
-            return {"Access Denied": "You can not edit this ride"}
+        return {"message": "You can not edit this ride", "status": 401}
 
     @staticmethod
     def delete_ride(ride_id, user_id):
@@ -97,11 +101,11 @@ class Ride:
                 try:
                     sql = "DELETE FROM rides WHERE id = %s AND creator_id = %s"
                     cursor.execute(sql, [ride_id, user_id])
-                    return {"message": "Ride offer deleted successfully"}
+                    return {"message": "Ride offer deleted successfully", "status": 201}
                 except Exception as e:
                     return e
         if not check_user_ride(ride_id, user_id):
-            return {"Access Denied": "You can not delete this ride"}
+            return {"message": "Access Denied, You can not delete this ride", "status": 401}
 
     @staticmethod
     def generate_ref_no():
@@ -173,5 +177,6 @@ def ride_details(ride):
             "time": ride[4],
             "creator": ride[5],
             "phone": ride[6],
-            "price": ride[7]
+            "price": ride[7],
+            "requests": ride[8]
             }

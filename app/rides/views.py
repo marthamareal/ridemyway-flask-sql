@@ -7,7 +7,7 @@ from flask import Blueprint, jsonify, make_response, request
 
 from app.decorators import login_required
 from app.rides.model import Ride
-from app.validators import ValidateUserEntries, check_feild
+from app.validators import ValidateUserEntries, check_feild, form_errors
 
 blue_print_rides = Blueprint('blue_print_rides', __name__)
 
@@ -19,8 +19,12 @@ def create_ride(user_id):
     try:
         args = json.loads(request.data.decode())
         missing_form_fields.clear()
+        form_errors.clear()
+        for field in ["date", "price", "destination", "time", "source"]:
+            check_form_fields(args, field)
+
         if missing_form_fields:
-            return make_response(jsonify({"these fields are required": missing_form_fields}), 400)
+            return make_response(jsonify({"message": "These fields are required %s"%missing_form_fields}), 400)
             
         validate_flag = ValidateUserEntries.create_ride(args)
         
@@ -28,11 +32,11 @@ def create_ride(user_id):
             ride_instance = Ride(user_id, args)
             created_ride = Ride.create_ride(ride_instance)
             return make_response(jsonify({"ride": created_ride}), 201)
-        return make_response(jsonify(validate_flag), 400)
+        return make_response(jsonify({"message": validate_flag}), 400)
 
     except Exception as e:
         logging.error(e)
-        return make_response("Some thing went wrong on the server ", 500)
+        return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 
 @swag_from('/app/apidocs/get_ride.yml')
@@ -44,7 +48,7 @@ def show_ride(user_id, ride_id):
         return make_response(jsonify({"ride": ride}), 200)
     except Exception as e:
         logging.error(e)
-        return make_response("Some thing went wrong on the server", 500)
+        make_response(jsonify({"message":"Some thing went wrong on the server"}), 500)
 
 
 @swag_from('/app/apidocs/get_rides.yml')
@@ -56,26 +60,34 @@ def get_all_rides(user_id):
         return make_response(jsonify(rides), 200)
     except Exception as e:
         logging.error(e)
-        return make_response("Some thing went wrong on the server", 500)
+        return make_response(jsonify({"message":"Some thing went wrong on the server"}), 500)
 
 
 @blue_print_rides.route('/rides/update/<int:ride_id>', methods=['PUT'])
 @login_required
 def update_ride_offer(user_id, ride_id):
     try:
+        args = json.loads(request.data.decode())
+        missing_form_fields.clear()
+        form_errors.clear()
+        for field in ["date", "price", "destination", "time", "source"]:
+            check_form_fields(args, field)
         
         args = json.loads(request.data.decode())
 
         validate_flag = ValidateUserEntries.create_ride(args)
 
         if validate_flag == "pass":
-            results = Ride.update(user_id,ride_id, args)
-            return make_response(jsonify(results), 201)
+            results = Ride.update(user_id, ride_id, args)
 
-        return jsonify(validate_flag)
+            if results.get("status"):
+                return make_response(jsonify(results), 401)
+
+            return make_response(jsonify(results), 201)
+        return make_response(jsonify({"message": validate_flag}), 400)
     except Exception as e:
         logging.error(e)
-        return make_response("Some thing went wrong on the server", 500)
+        make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 
 @swag_from('/app/apidocs/delete_ride.yml')
@@ -85,10 +97,10 @@ def delete_one_ride(user_id, ride_id):
     try:
         results = Ride.delete_ride(ride_id, user_id)
 
-        return make_response(jsonify(results), 201)
+        return make_response(jsonify(results), results['status'])
     except Exception as e:
         logging.error(e)
-        return make_response("Some thing went wrong on the server", 500)
+        make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 
 @swag_from('/app/apidocs/get_rides.yml')

@@ -64,7 +64,7 @@ class ValidateUserEntries:
     @staticmethod
     def create_ride(args):
 
-        if not check_feild(name_regex,args.get("source")):
+        if not check_feild(name_regex, args.get("source")):
             form_errors.append("Fill in a valid source avoid spaces, use , or -")
         if not check_feild(name_regex,args.get("destination")):
             form_errors.append("Fill in a valid "
