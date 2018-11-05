@@ -1,23 +1,24 @@
-from app.user import check_user
 from app.db_manager import DatabaseManager
+from app.rides import check_ride
 from app.user import check_details
+from app.user import check_user
 
 
 class Ride:
 
     def __init__(self, creator_id, args):
-         """
-                 This method acts as a constructor for our class, its used to initialise class attributes
-         """
-         self.id = ''
-         self.ref_no = self.generate_ref_no()
-         self.date = args.get("date")
-         self.time = args.get("time")
-         self.source = args.get("source")
-         self.creator_id = creator_id
-         self.destination = args.get("destination")
-         self.requests_no = 0
-         self.price = args.get("price")
+        """
+                This method acts as a constructor for our class, its used to initialise class attributes
+        """
+        self.id = ''
+        self.ref_no = self.generate_ref_no()
+        self.date = args.get("date")
+        self.time = args.get("time")
+        self.source = args.get("source")
+        self.creator_id = creator_id
+        self.destination = args.get("destination")
+        self.requests_no = 0
+        self.price = args.get("price")
 
     def create_ride(self):
 
@@ -27,36 +28,32 @@ class Ride:
             check_details(sql, (self.ref_no, self.source, self.destination, self.date,
                                 self.creator_id, self.time, self.requests_no, self.price))
             result_ride = check_details(
-                "SELECT id,ref_no, source, destination, date, creator_id, time, requests_no, price FROM rides WHERE ref_no = %s", [self.ref_no])
+                "SELECT id,ref_no, source, destination, date, creator_id, time, requests_no, price FROM rides WHERE ref_no = %s",
+                [self.ref_no])
             return ride_json(result_ride)
         except Exception as e:
             return e
 
     @staticmethod
-    def get_ride(user_id, ride_id):
-        if check_user_ride(ride_id, user_id) == "Not Found":
-            return {"ride": "ride not found"}
-
-        with DatabaseManager() as cursor:
-            try:
-
-                sql = """SELECT date, ref_no, source, destination,time,
-                          concat(l_name,' ',f_name)  as creator,
-                          phone_no as phone,
-                          price,
-                           (SELECT count (*) FROM requests
-                          INNER JOIN rides r on requests.ride_id = r.id
-                          WHERE r.id = %s) as requests
-                          FROM rides
-                           INNER JOIN users ON rides.creator_id = users.id
-                           WHERE rides.id = %s"""
-                ride = check_details(sql, [ride_id, ride_id])
-                if ride:
-
-                    return ride_details(ride)
-                return {"message": "Requested ride is not found"}
-            except Exception as e:
-                return e
+    def get_ride(ride_id):
+        try:
+            sql = """SELECT date, ref_no, source, destination,time,
+                      concat(l_name,' ',f_name)  as creator,
+                      phone_no as phone,
+                      price,
+                       (SELECT count (*) FROM requests
+                      INNER JOIN rides r on requests.ride_id = r.id
+                      WHERE r.id = %s) as requests,
+                      creator_id
+                      FROM rides
+                       INNER JOIN users ON rides.creator_id = users.id
+                       WHERE rides.id = %s"""
+            ride = check_details(sql, [ride_id, ride_id])
+            if ride:
+                return ride_details(ride)
+            return {"message": "Requested ride is not found"}
+        except Exception as e:
+            return e
 
     @staticmethod
     def get_rides(user_id):
@@ -82,10 +79,12 @@ class Ride:
         if check_user_ride(ride_id, user_id):
             try:
                 update = """UPDATE rides SET source = %s, destination = %s, date = %s, time = %s , price = %s
-                                                                   WHERE id = %s  RETURNING *
+                                                                   WHERE id = %s  
+                                                                   RETURNING id,ref_no, source, destination,
+                                                                    date, creator_id, time, requests_no, price
                                                  """
                 ride = check_details(update, (args.get("source"), args.get("destination"), args.get("date"),
-                            args.get("time"), args.get("price"), ride_id))
+                                              args.get("time"), args.get("price"), ride_id))
                 if ride:
                     return {"updated ride": ride_json(ride)}
                 return {"message": "No ride Found"}
@@ -96,16 +95,18 @@ class Ride:
 
     @staticmethod
     def delete_ride(ride_id, user_id):
-        if check_user_ride(ride_id, user_id):
-            with DatabaseManager() as cursor:
-                try:
-                    sql = "DELETE FROM rides WHERE id = %s AND creator_id = %s"
-                    cursor.execute(sql, [ride_id, user_id])
-                    return {"message": "Ride offer deleted successfully", "status": 201}
-                except Exception as e:
-                    return e
-        if not check_user_ride(ride_id, user_id):
+        if check_ride(ride_id):
+            if check_user_ride(ride_id, user_id):
+                with DatabaseManager() as cursor:
+                    try:
+                        sql = "DELETE FROM rides WHERE id = %s AND creator_id = %s"
+                        cursor.execute(sql, [ride_id, user_id])
+                        return {"message": "Ride offer deleted successfully", "status": 201}
+                    except Exception as e:
+                        return e
+
             return {"message": "Access Denied, You can not delete this ride", "status": 401}
+        return {"message": "Ride Not found", "status": 404}
 
     @staticmethod
     def generate_ref_no():
@@ -147,8 +148,7 @@ class Ride:
 def check_user_ride(ride_id, user_id):
     """This method returns false when ride is not found and true when user created it"""
     try:
-        if check_details("SELECT ref_no FROM rides WHERE creator_id = %s AND id = %s", [
-                          user_id, ride_id]):
+        if check_details("SELECT ref_no FROM rides WHERE creator_id = %s AND id = %s", [user_id, ride_id]):
             return True
         return False
     except Exception as e:
@@ -178,5 +178,6 @@ def ride_details(ride):
             "creator": ride[5],
             "phone": ride[6],
             "price": ride[7],
-            "requests": ride[8]
+            "requests": ride[8],
+            "creator_id": ride[9]
             }

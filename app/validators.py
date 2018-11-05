@@ -17,8 +17,10 @@ price_regex = "^[0-9]{3,}$"
 def check_feild(pattern_regex, field):
     return re.match(pattern_regex, str(field))
 
+
 def check_password(password):
     return re.match(password_regex, password.lstrip(' ')) and len(password) > 8
+
 
 def check_approval(approval):
     return "error" if not re.match(approval_regex, approval) else "pass"
@@ -59,16 +61,18 @@ class ValidateUserEntries:
         if check_feild(email_regex, email) and check_password(password):
             return "pass"
         else:
-            return {"message": "Provide a correct email address and password", "status": 400}
+            return {"message": "Provide a correct email address and password"}
 
     @staticmethod
     def create_ride(args):
 
-        if not check_feild(name_regex, args.get("source")):
+        if not check_feild(address_regex, args.get("source")):
             form_errors.append("Fill in a valid source avoid spaces, use , or -")
-        if not check_feild(name_regex,args.get("destination")):
+
+        if not check_feild(address_regex,args.get("destination")):
             form_errors.append("Fill in a valid "
                     "destination avoid spaces, use , or -")
+
         if not check_feild(time_regex,args.get("time")):
             form_errors.append("Input valid "
                     "time attributes eg 10:30 AM")
