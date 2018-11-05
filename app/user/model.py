@@ -52,8 +52,8 @@ class User:
                         {'email': email, 'user_id': results[0]}, secret, algorithm='HS256').decode()
 
                     cursor.execute(logged_in, (email, hash_password(password)))
-                    return {"message": "You are logged in", "token": token, 'lname': results[3]}
-                return;
+                    return {"message": "You are logged in", "token": token, 'lname': results[3], 'user_id': results[0]}
+                return {"message": "Email and password don't match"}
         except Exception as e:
             return e
 

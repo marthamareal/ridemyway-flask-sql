@@ -2,12 +2,12 @@ import json
 import logging
 
 from flasgger import swag_from
-from app.user import check_form_fields, missing_form_fields
 from flask import Blueprint, jsonify, make_response, request
 
 from app.decorators import login_required
 from app.rides.model import Ride
-from app.validators import ValidateUserEntries, check_feild, form_errors
+from app.user import check_form_fields, missing_form_fields
+from app.validators import ValidateUserEntries, form_errors
 
 blue_print_rides = Blueprint('blue_print_rides', __name__)
 
@@ -24,10 +24,12 @@ def create_ride(user_id):
             check_form_fields(args, field)
 
         if missing_form_fields:
-            return make_response(jsonify({"message": "These fields are required %s"%missing_form_fields}), 400)
-            
+            return make_response(
+                jsonify({"message": "These fields:  %s  are required" % (",".join([str(x) for x in missing_form_fields]))}),
+                400)
+
         validate_flag = ValidateUserEntries.create_ride(args)
-        
+
         if validate_flag == "pass":
             ride_instance = Ride(user_id, args)
             created_ride = Ride.create_ride(ride_instance)
@@ -44,11 +46,13 @@ def create_ride(user_id):
 @login_required
 def show_ride(user_id, ride_id):
     try:
-        ride = Ride.get_ride(user_id, ride_id)
+        ride = Ride.get_ride(ride_id)
+        if ride.get("message"):
+            return make_response(jsonify(ride), 404)
         return make_response(jsonify({"ride": ride}), 200)
     except Exception as e:
         logging.error(e)
-        make_response(jsonify({"message":"Some thing went wrong on the server"}), 500)
+        make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 
 @swag_from('/app/apidocs/get_rides.yml')
@@ -60,7 +64,7 @@ def get_all_rides(user_id):
         return make_response(jsonify(rides), 200)
     except Exception as e:
         logging.error(e)
-        return make_response(jsonify({"message":"Some thing went wrong on the server"}), 500)
+        return make_response(jsonify({"message": "Some thing went wrong on the server"}), 500)
 
 
 @blue_print_rides.route('/rides/update/<int:ride_id>', methods=['PUT'])
@@ -72,8 +76,11 @@ def update_ride_offer(user_id, ride_id):
         form_errors.clear()
         for field in ["date", "price", "destination", "time", "source"]:
             check_form_fields(args, field)
-        
-        args = json.loads(request.data.decode())
+
+        if missing_form_fields:
+            return make_response(
+                jsonify({"message": "These fields:  %s  are required" % (",".join([str(x) for x in missing_form_fields]))}),
+                400)
 
         validate_flag = ValidateUserEntries.create_ride(args)
 

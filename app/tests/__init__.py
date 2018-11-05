@@ -1,6 +1,7 @@
 
 import json
 
+
 def create_login_user(_object):
     # create a user
         data = json.dumps(_object.sample_user)

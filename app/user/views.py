@@ -39,15 +39,15 @@ def login():
         email = check_form_fields(args, "email")
         password = check_form_fields(args, "password")
         if missing_form_fields:
-            return make_response(jsonify({"these fields are required": missing_form_fields}), 400)
+            return make_response(jsonify({"These fields are required": missing_form_fields}), 400)
 
         validate_flag = ValidateUserEntries.login(email, password)
         if validate_flag == "pass":
             _login = User.login_user(email, password)
             if _login.get("token"):
                 return make_response(jsonify(_login), 200)
-                
-        validate_flag = {"message": "Email and password don't match"}
+
+            return make_response(jsonify(_login), 403)
         return make_response(jsonify(validate_flag), 400)
     except Exception as e:
         logging.error(e)
